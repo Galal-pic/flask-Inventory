@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-auto align-items-center">
+    <form action="" method="POST">
+        {{ form.hidden_tag() }}
+
+        <div>
+            {{ form.fname.label }}
+            <div class="{% if form.fname.errors %}is-invalid{% endif %}">
+                {{ form.fname(class="form-control") }}
+            </div>
+            {% if form.fname.errors %}
+            <div class="invalid-feedback">
+                {% for error in form.fname.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form.lname.label }}
+            <div class="{% if form.lname.errors %}is-invalid{% endif %}">
+                {{ form.lname(class="form-control") }}
+            </div>
+            {% if form.lname.errors %}
+            <div class="invalid-feedback">
+                {% for error in form.lname.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form.email.label }}
+            <div class="{% if form.email.errors %}is-invalid{% endif %}">
+                {{ form.email(class="form-control") }}
+            </div>
+            {% if form.email.errors %}
+            <div class="invalid-feedback">
+                {% for error in form.email.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form.password.label }}
+            <div class="{% if form.password.errors %}is-invalid{% endif %}">
+                {{ form.password(class="form-control") }}
+            </div>
+            {% if form.password.errors %}
+            <div class="invalid-feedback">
+                {% for error in form.password.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form.confirm_password.label }}
+            <div class="{% if form.confirm_password.errors %}is-invalid{% endif %}">
+                {{ form.confirm_password(class="form-control") }}
+            </div>
+            {% if form.confirm_password.errors %}
+            <div class="invalid-feedback">
+                {% for error in form.confirm_password.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div>
+            {{ form.warehouse_worker.label }}
+            {{ form.warehouse_worker(class="form-check-input") }}
+        </div>
+
+        <div>
+            {{ form.manager.label }}
+            {{ form.manager(class="form-check-input") }}
+        </div>
+
+        <div>
+            {{ form.sales.label }}
+            {{ form.sales(class="form-check-input") }}
+        </div>
+
+        <div>
+            {{ form.purchases.label }}
+            {{ form.purchases(class="form-check-input") }}
+        </div>
+
+        <div>
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+    </form>
+
+    <div class="border-top pt-3">
+        <small class="text-muted">
+            Already have an account?
+            <a href="{{ url_for('login') }}">Sign in</a>
+        </small>
+    </div>
+</div>
+{% endblock content %}
