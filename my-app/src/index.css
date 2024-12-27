@@ -11,7 +11,7 @@ body {
   -moz-osx-font-smoothing: grayscale;}
 
 .App {
-  display: flex;
+  /* display: flex; */
   /* align-items: center; */
 }
 

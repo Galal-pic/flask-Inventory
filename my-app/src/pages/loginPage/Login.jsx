@@ -10,15 +10,20 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import styles from "./Login.module.css";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const { setUser } = useAuth();
+  const [formError, setFormError] = useState("");
 
   const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Simple email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
@@ -28,47 +33,54 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setFormError(""); // Reset form error on each submit
+
     if (!validateEmail(email)) {
       setEmailError("Invalid email address");
       return;
     }
-    setEmailError("");
-    console.log("Email:", email);
-    console.log("Password:", password);
 
-    // // Prepare the data as a JSON object
-    // const dataToSend = {
-    //   email: email,
-    //   password: password,
-    // };
+    // setEmailError("");
+    // console.log("Email:", email);
+    // console.log("Password:", password);
 
-    // // Fetch request to send JSON
+    const dataToSend = {
+      email: email,
+      password: password,
+    };
+    const userInfo = { email, password };
+    setUser(userInfo);
+    navigate("/home");
+
     // fetch("http://127.0.0.1:5000/post", {
     //   method: "POST",
     //   headers: {
-    //     "Content-Type": "application/json", // Specify JSON content type
+    //     "Content-Type": "application/json",
     //   },
-    //   body: JSON.stringify(dataToSend), // Convert data to JSON string
+    //   body: JSON.stringify(dataToSend),
     // })
     //   .then((response) => {
     //     if (response.ok) {
-    //       return response.json(); // Parse response as JSON if successful
+    //       return response.json();
     //     } else {
     //       throw new Error("Network response was not ok");
     //     }
     //   })
     //   .then((data) => {
-    //     console.log("Response from server:", data); // Handle server response
+    //     const userInfo = { email, password };
+    //     setUser(userInfo);
+    //     navigate("/home");
     //   })
     //   .catch((error) => {
-    //     console.error("Error:", error); // Log any errors
+    //     setFormError(error.message); // Set the error message for failed login
+    //     console.error("Error:", error);
     //   });
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.boxText}>
-        <h1 className={styles.title}>Welcome to My App</h1>
+        <h1 className={styles.title}>Welcome to CUBII</h1>
         <p className={styles.text}>
           Please enter your email address and password to access your account.
         </p>
@@ -82,7 +94,7 @@ const Login = () => {
       >
         <Paper className={styles.paper}>
           {/* <GroupsIcon className={styles.iconGroup} /> */}
-          <h2 className={styles.subTitle}>login</h2>
+          <h2 className={styles.subTitle}>Login</h2>
           <Box
             component="form"
             onSubmit={handleSubmit}
@@ -125,6 +137,11 @@ const Login = () => {
                 },
               }}
             />
+            {formError && (
+              <p style={{ color: "red", textAlign: "center" }}>
+                Please, Try again
+              </p>
+            )}
 
             {/* Submit Button */}
             <Button type="submit" variant="contained" className={styles.btn}>
