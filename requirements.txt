@@ -1,3 +1,6 @@
 Flask
-Flask-WTF
-email-validator
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-CORS
+Flask-JWT-Extended
+python-dotenv

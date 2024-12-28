@@ -48,29 +48,29 @@ const Login = () => {
       email: email,
       password: password,
     };
-
-    fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(dataToSend),
-    })
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error("Network response was not ok");
-        }
-      })
-      .then((data) => {
-        navigate("/home");
-        login(data.access_token);
-      })
-      .catch((error) => {
-        setFormError(error.message);
-        console.error("Error:", error);
-      });
+    navigate("/home");
+    // fetch(apiUrl, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(dataToSend),
+    // })
+    //   .then((response) => {
+    //     if (response.ok) {
+    //       return response.json();
+    //     } else {
+    //       throw new Error("Network response was not ok");
+    //     }
+    //   })
+    //   .then((data) => {
+    //     navigate("/home");
+    //     login(data.access_token);
+    //   })
+    //   .catch((error) => {
+    //     setFormError(error.message);
+    //     console.error("Error:", error);
+    //   });
   };
 
   const handleRegister = () => {
