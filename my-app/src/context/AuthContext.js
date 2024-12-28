@@ -1,27 +1,10 @@
-import React, { createContext, useState, useContext } from "react";
+import { createAuthProvider } from "react-token-auth";
 
-// Create Context
-const AuthContext = createContext();
-
-// Create a custom hook to use the AuthContext
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
-
-// AuthProvider component
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null); // user state to hold user info
-
-  // Function to log out
-  const logout = async () => {
-    // await fetch("https://your-api-url.com/logout", { method: "POST" });
-    setUser(null);
-    localStorage.removeItem("user");
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, setUser, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
+export const { useAuth, authFetch, login, logout } = createAuthProvider({
+  accessTokenKey: "access_token",
+  onUpdateToken: (token) =>
+    fetch("http://localhost:3001/users", {
+      method: "POST",
+      body: token.refresh_token,
+    }).then((r) => r.json()),
+});
