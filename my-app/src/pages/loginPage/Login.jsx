@@ -12,20 +12,17 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import styles from "./Login.module.css";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../context/AuthContext";
+import { motion } from "framer-motion";
+import logo from "./logo.png";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
+  const [name, setName] = useState("");
+  const [nameError, setNameError] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const [formError, setFormError] = useState("");
   const apiUrl = "http://localhost:3001/users";
-
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
 
   const handleClickShowPassword = () => {
     setShowPassword((prev) => !prev);
@@ -33,22 +30,23 @@ const Login = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setFormError("");
-    setEmailError("");
+    setNameError("");
+    setPasswordError("");
 
-    if (!email) {
-      setEmailError("Email is required");
+    if (!name) {
+      setNameError("Name is required");
       return;
-    } else if (!validateEmail(email)) {
-      setEmailError("Invalid email address");
+    }
+    if (!password) {
+      setPasswordError("Password is required");
       return;
     }
 
     const dataToSend = {
-      email: email,
+      name: name,
       password: password,
     };
-    navigate("/home");
+    navigate("/users");
     // fetch(apiUrl, {
     //   method: "POST",
     //   headers: {
@@ -80,10 +78,22 @@ const Login = () => {
   return (
     <div className={styles.container}>
       <div className={styles.boxText}>
-        <h1 className={styles.title}>Welcome to CUBII</h1>
-        <p className={styles.text}>
-          Please enter your email address and password to access your account.
-        </p>
+        <motion.img
+          initial={{ y: "-100vh" }}
+          animate={{ y: 0 }}
+          transition={{ type: "spring", stiffness: 50 }}
+          src={logo}
+          alt="logo"
+          className={styles.logo}
+        />
+        <motion.h1
+          initial={{ x: "-100vw" }}
+          animate={{ x: 0 }}
+          transition={{ type: "spring", stiffness: 50 }}
+          className={styles.title}
+        >
+          Welcome to CUBII
+        </motion.h1>
       </div>
 
       <Box
@@ -92,69 +102,69 @@ const Login = () => {
         }}
         className={styles.boxForm}
       >
-        <Paper className={styles.paper}>
-          <h2 className={styles.subTitle}>Login</h2>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            className={styles.textFields}
-          >
-            {/* Email Field */}
-            <TextField
-              label="Email Address"
-              variant="outlined"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={styles.textField}
-              error={!!emailError}
-              helperText={emailError}
-            />
-            {/* Password Field */}
-            <TextField
-              label="Password"
-              type={showPassword ? "text" : "password"}
-              variant="outlined"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={styles.textField}
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={handleClickShowPassword}
-                        edge="end"
-                        className={styles.iconVisibility}
-                      >
-                        {showPassword ? <Visibility /> : <VisibilityOff />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-            {formError && (
-              <p style={{ color: "red", textAlign: "center" }}>
-                Please, Try again
-              </p>
-            )}
-            {/* Submit Button */}
-            <Button type="submit" variant="contained" className={styles.btn}>
-              Sign In
-            </Button>
-            {/* Register Button */}
-            <Button
-              type="button"
-              variant="contained"
-              className={styles.btn}
-              onClick={handleRegister}
-            >
-              Register
-            </Button>
-          </Box>
-        </Paper>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 100, damping: 25 }}
+        >
+          <Paper className={styles.paper}>
+            <h2 className={styles.subTitle}>Login</h2>
+            <Box component="form" className={styles.textFields}>
+              {/* Email Field */}
+              <TextField
+                label="Name"
+                variant="outlined"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={styles.textField}
+                error={!!nameError}
+                helperText={nameError}
+              />
+              {/* Password Field */}
+              <TextField
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                variant="outlined"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={styles.textField}
+                error={!!passwordError}
+                helperText={passwordError}
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={handleClickShowPassword}
+                          edge="end"
+                          className={styles.iconVisibility}
+                        >
+                          {showPassword ? <Visibility /> : <VisibilityOff />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+              {/* {formError && (
+                <p style={{ color: "red", textAlign: "center" }}>
+                  Please, Try again
+                </p>
+              )} */}
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                variant="contained"
+                className={styles.btn}
+                onClick={handleSubmit}
+              >
+                Sign In
+              </Button>
+            </Box>
+          </Paper>
+        </motion.div>
       </Box>
     </div>
   );
