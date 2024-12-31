@@ -7,34 +7,30 @@ import {
   InputAdornment,
   IconButton,
   Snackbar,
-  Alert,
+  Slide,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import styles from "./Register.module.css";
+
 export default function Register() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [username, setUserName] = useState("");
+  const [jobName, setJobName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState("");
   const [nameError, setNameError] = useState("");
-  const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [jobError, setJobError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const apiUrl = "http://localhost:3001/users";
-
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const validatePhone = (phone) => {
-    const phoneRegex = /^[0-9]{10,15}$/; // Validates phone numbers with 10-15 digits
+    const phoneRegex = /^[0-9]+$/;
     return phoneRegex.test(phone);
   };
 
@@ -45,52 +41,63 @@ export default function Register() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setFormError("");
-    setEmailError("");
+    setNameError("");
     setPhoneError("");
+    setJobError("");
     setPasswordError("");
+    setConfirmPasswordError("");
 
-    if (!name) {
+    if (!username) {
       setNameError("Name is required");
       return;
-    }
-
-    if (!email) {
-      setEmailError("Email is required");
-      return;
-    } else if (!validateEmail(email)) {
-      setEmailError("Invalid email address");
+    } else if (username.length > 80) {
+      setNameError("Name cannot be longer than 80 characters");
       return;
     }
 
-    if (!phone) {
+    if (!phoneNumber) {
       setPhoneError("Phone number is required");
       return;
-    } else if (!validatePhone(phone)) {
+    } else if (!validatePhone(phoneNumber)) {
       setPhoneError("Invalid phone number");
+      return;
+    } else if (phoneNumber.length > 20) {
+      setPhoneError("Phone number cannot be longer than 20 digits");
+      return;
+    }
+
+    if (!jobName) {
+      setJobError("Job name is required");
+      return;
+    } else if (jobName.length > 100) {
+      setJobError("Job name cannot be longer than 100 characters");
       return;
     }
 
     if (!password) {
       setPasswordError("Password is required");
       return;
+    } else if (password.length < 6 || password.length > 120) {
+      setPasswordError("Password must be between 6 and 120 characters");
+      return;
     }
+
     if (!confirmPassword) {
       setConfirmPasswordError("Confirm password is required");
       return;
-    }
-    if (password !== confirmPassword) {
+    } else if (password !== confirmPassword) {
       setConfirmPasswordError("Passwords do not match");
       return;
     }
 
     const dataToSend = {
-      name,
-      email,
-      phone,
+      username,
       password,
+      phone_number: phoneNumber,
+      job_name: jobName,
     };
 
-    fetch(apiUrl, {
+    fetch("http://127.0.0.1:5000/auth/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -101,18 +108,37 @@ export default function Register() {
         if (response.ok) {
           return response.json();
         } else {
-          throw new Error("Network response was not ok");
+          return response.json().then((data) => {
+            throw new Error(data.message || "Network response was not ok");
+          });
         }
       })
       .then((data) => {
+        setSnackbarMessage(data.message || "User registered successfully");
         setOpenSnackbar(true);
       })
       .catch((error) => {
-        setFormError("Registration failed. Please try again.");
+        setSnackbarMessage(
+          error.message || "Registration failed. Please try again."
+        );
+        setOpenSnackbar(true);
         console.error("Error:", error);
       });
   };
 
+  // Custom Slide transition
+  function SlideTransition(props) {
+    return (
+      <Slide
+        {...props}
+        direction="up"
+        sx={{
+          backgroundColor: "white",
+          color: "#1976d2",
+        }}
+      />
+    );
+  }
   // Close Snackbar
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
@@ -141,33 +167,34 @@ export default function Register() {
               label="Name"
               variant="outlined"
               required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={username}
+              onChange={(e) => setUserName(e.target.value)}
               className={styles.textField}
               error={!!nameError}
               helperText={nameError}
-            />
-            {/* Email Field */}
-            <TextField
-              label="Email Address"
-              variant="outlined"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={styles.textField}
-              error={!!emailError}
-              helperText={emailError}
             />
             {/* Phone Field */}
             <TextField
               label="Phone Number"
               variant="outlined"
               required
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
               className={styles.textField}
               error={!!phoneError}
               helperText={phoneError}
+            />
+
+            {/* Job Field */}
+            <TextField
+              label="Job Name"
+              variant="outlined"
+              required
+              value={jobName}
+              onChange={(e) => setJobName(e.target.value)}
+              className={styles.textField}
+              error={!!jobError}
+              helperText={jobError}
             />
             {/* Password Field */}
             <TextField
@@ -222,16 +249,14 @@ export default function Register() {
           </Button>
         </Paper>
       </Box>
+
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={2000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity="success">
-          user was added
-        </Alert>
-      </Snackbar>
+        TransitionComponent={SlideTransition}
+        message={snackbarMessage}
+        autoHideDuration={3000}
+      />
     </div>
   );
 }

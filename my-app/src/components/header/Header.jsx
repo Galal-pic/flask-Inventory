@@ -28,9 +28,11 @@ const links = [
 ];
 
 export default function Header() {
+  console.log( );
+
   const navigate = useNavigate();
   const handleLogout = async () => {
-    await logout();
+    logout();
     navigate("/login");
   };
 
@@ -47,145 +49,6 @@ export default function Header() {
     setState(open);
   };
 
-  const list = () => (
-    <Box
-      sx={{
-        width: 260,
-        backgroundColor: "#f7f7f7",
-        height: "100vh",
-        padding: 2,
-      }}
-      role="presentation"
-      onClick={toggleDrawer(false)}
-      onKeyDown={toggleDrawer(false)}
-    >
-      <List
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        {/* User Information */}
-        <ListItem
-          disablePadding
-          sx={{
-            marginBottom: 3,
-          }}
-        >
-          <ListItemButton
-            sx={{
-              cursor: "context-menu",
-              display: "flex",
-              gap: 1,
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-              Name:
-            </Typography>
-            <ListItemText
-              primary="Esraa Soliman"
-              sx={{
-                color: "#555",
-              }}
-            />
-          </ListItemButton>
-        </ListItem>
-        <ListItem
-          disablePadding
-          sx={{
-            marginBottom: 3,
-          }}
-        >
-          <ListItemButton
-            sx={{
-              cursor: "context-menu",
-              display: "flex",
-              gap: 1,
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-              Gmail:
-            </Typography>
-            <ListItemText
-              primary="Esraa@gmail.com"
-              sx={{
-                color: "#555",
-              }}
-            />
-          </ListItemButton>
-        </ListItem>
-        <ListItem
-          disablePadding
-          sx={{
-            marginBottom: 3,
-          }}
-        >
-          <ListItemButton
-            sx={{
-              cursor: "context-menu",
-              display: "flex",
-              gap: 1,
-            }}
-          >
-            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-              Phone:
-            </Typography>
-            <ListItemText
-              primary="01146815591"
-              sx={{
-                color: "#555",
-              }}
-            />
-          </ListItemButton>
-        </ListItem>
-
-        {/* Logout Button */}
-        <ListItem disablePadding>
-          <ListItemButton
-            sx={{
-              cursor: "default",
-              "&:hover": { backgroundColor: "transparent" },
-            }}
-          >
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleLogout}
-              sx={{
-                width: "100%",
-                height: "50px",
-                fontSize: "16px",
-                fontWeight: "bold",
-                backgroundColor: "#1976d2",
-                "&:hover": {
-                  backgroundColor: "#115293",
-                },
-              }}
-            >
-              Logout
-            </Button>
-          </ListItemButton>
-        </ListItem>
-
-        {/* logo */}
-        <ListItem
-          disablePadding
-          sx={{
-            marginBottom: 3,
-          }}
-        >
-          <img
-            src={logo}
-            alt="logo"
-            style={{
-              height: "100px",
-              margin: "50px auto",
-            }}
-          />
-        </ListItem>
-      </List>
-    </Box>
-  );
   return (
     <div className={styles.header}>
       <Link to="/users">
@@ -237,7 +100,143 @@ export default function Header() {
         onClose={toggleDrawer(false)}
         onOpen={toggleDrawer(true)}
       >
-        {list()}
+        <Box
+          sx={{
+            width: 260,
+            backgroundColor: "#f7f7f7",
+            height: "100vh",
+            padding: 2,
+          }}
+          role="presentation"
+          onClick={toggleDrawer(false)}
+          onKeyDown={toggleDrawer(false)}
+        >
+          <List
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {/* User Information */}
+            <ListItem
+              disablePadding
+              sx={{
+                marginBottom: 3,
+              }}
+            >
+              <ListItemButton
+                sx={{
+                  cursor: "context-menu",
+                  display: "flex",
+                  gap: 1,
+                }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  Name:
+                </Typography>
+                <ListItemText
+                  primary="Esraa Soliman"
+                  sx={{
+                    color: "#555",
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+            <ListItem
+              disablePadding
+              sx={{
+                marginBottom: 3,
+              }}
+            >
+              <ListItemButton
+                sx={{
+                  cursor: "context-menu",
+                  display: "flex",
+                  gap: 1,
+                }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  Gmail:
+                </Typography>
+                <ListItemText
+                  primary="Esraa@gmail.com"
+                  sx={{
+                    color: "#555",
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+            <ListItem
+              disablePadding
+              sx={{
+                marginBottom: 3,
+              }}
+            >
+              <ListItemButton
+                sx={{
+                  cursor: "context-menu",
+                  display: "flex",
+                  gap: 1,
+                }}
+              >
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  Phone:
+                </Typography>
+                <ListItemText
+                  primary="01146815591"
+                  sx={{
+                    color: "#555",
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+
+            {/* Logout Button */}
+            <ListItem disablePadding>
+              <ListItemButton
+                sx={{
+                  cursor: "default",
+                  "&:hover": { backgroundColor: "transparent" },
+                }}
+              >
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleLogout}
+                  sx={{
+                    width: "100%",
+                    height: "50px",
+                    fontSize: "16px",
+                    fontWeight: "bold",
+                    backgroundColor: "#1976d2",
+                    "&:hover": {
+                      backgroundColor: "#115293",
+                    },
+                  }}
+                >
+                  Logout
+                </Button>
+              </ListItemButton>
+            </ListItem>
+
+            {/* logo */}
+            <ListItem
+              disablePadding
+              sx={{
+                marginBottom: 3,
+              }}
+            >
+              <img
+                src={logo}
+                alt="logo"
+                style={{
+                  height: "100px",
+                  margin: "50px auto",
+                }}
+              />
+            </ListItem>
+          </List>
+        </Box>
       </SwipeableDrawer>
     </div>
   );

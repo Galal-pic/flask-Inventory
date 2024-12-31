@@ -44,7 +44,7 @@ function CustomToolbar() {
         startIcon={<AddIcon />}
         onClick={handleClick}
       >
-        Add record
+        Add User
       </Button>
       <GridToolbarQuickFilter />
     </GridToolbarContainer>
@@ -334,11 +334,11 @@ export default function Users() {
   ];
 
   // Data
-  useEffect(() => {
-    fetchData("http://localhost:3001/users")
-      .then(setUsers)
-      .catch((error) => console.error("حدث خطأ:", error));
-  }, []);
+  // useEffect(() => {
+  //   fetchData("http://localhost:3001/users")
+  //     .then(setUsers)
+  //     .catch((error) => console.error("حدث خطأ:", error));
+  // }, []);
 
   return (
     <div className={styles.container}>

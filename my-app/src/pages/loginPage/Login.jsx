@@ -22,7 +22,6 @@ const Login = () => {
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const apiUrl = "http://localhost:3001/users";
 
   const handleClickShowPassword = () => {
     setShowPassword((prev) => !prev);
@@ -43,36 +42,32 @@ const Login = () => {
     }
 
     const dataToSend = {
-      name: name,
+      username: name,
       password: password,
     };
-    navigate("/users");
-    // fetch(apiUrl, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(dataToSend),
-    // })
-    //   .then((response) => {
-    //     if (response.ok) {
-    //       return response.json();
-    //     } else {
-    //       throw new Error("Network response was not ok");
-    //     }
-    //   })
-    //   .then((data) => {
-    //     navigate("/home");
-    //     login(data.access_token);
-    //   })
-    //   .catch((error) => {
-    //     setFormError(error.message);
-    //     console.error("Error:", error);
-    //   });
-  };
-
-  const handleRegister = () => {
-    navigate("/register");
+    fetch("http://127.0.0.1:5000/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dataToSend),
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error("Network response was not ok");
+        }
+      })
+      .then((data) => {
+        console.log("access_Token", data);
+        navigate("/users");
+        login(data.access_token);
+      })
+      .catch((error) => {
+        // setFormError(error.message);
+        console.error("Error:", error);
+      });
   };
 
   return (
@@ -153,6 +148,8 @@ const Login = () => {
                   Please, Try again
                 </p>
               )} */}
+
+              
               {/* Submit Button */}
               <Button
                 type="submit"
