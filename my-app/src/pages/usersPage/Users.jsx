@@ -51,8 +51,6 @@ function CustomToolbar() {
   );
 }
 
-
-
 export default function Users() {
   const [users, setUsers] = React.useState([]);
   const [editedRow, setEditedRow] = useState(null);
@@ -257,38 +255,48 @@ export default function Users() {
 
   // Data
   useEffect(() => {
+    let isMounted = true;
+  
     const fetchUserData = async () => {
+      const accessToken = localStorage.getItem("access_token");
       try {
-        const accessToken = localStorage.getItem("access_token");
         if (!accessToken) {
           console.error("Access token not found");
           return;
         }
-
+  
         const response = await fetch("http://127.0.0.1:5000/auth/users", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${accessToken}`, // Ensure the token is correctly formatted
           },
         });
-
+  
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-
+  
         const data = await response.json();
-        setUsers(data); // Assuming the response contains user data
+        if (isMounted) {
+          setUsers(data); // Assuming the response contains user data
+        }
       } catch (error) {
-        console.error("حدث خطأ:", error);
+        if (isMounted) {
+          console.error("حدث خطأ:", error);
+        }
       }
     };
-
+  
     fetchUserData();
+  
+    return () => {
+      isMounted = false; // Cleanup on unmount
+    };
   }, []);
-// console.log(users)
+  
   return (
     <div className={styles.container}>
-          <h1 className={styles.head}>System Users</h1>
+      <h1 className={styles.head}>System Users</h1>
 
       {/* Button to Add User */}
 
@@ -315,7 +323,7 @@ export default function Users() {
           "& .MuiDataGrid-cell:focus-within": {
             outline: "none",
           },
-          backgroundColor: "white"
+          backgroundColor: "white",
         }}
         hideFooter={true}
       />

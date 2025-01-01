@@ -61,7 +61,7 @@ const Login = () => {
         }
       })
       .then((data) => {
-        console.log("access_Token", data.access_token);
+        localStorage.setItem("access_token", data.access_token);
         navigate("/users");
 
         login(data);
@@ -70,8 +70,6 @@ const Login = () => {
         console.error("Error:", error);
       });
   };
-  const [loged] = useAuth();
-  console.log(loged)
   return (
     <div className={styles.container}>
       <div className={styles.boxText}>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./Header.module.css";
 import logo from "./logo.png";
 import { useAuth, logout } from "../../context/AuthContext";
@@ -28,42 +28,46 @@ const links = [
   },
 ];
 
-const getUserDataFromToken = async () => {
-  const accessToken = localStorage.getItem("access_token");
-  // console.log("Access Token:", accessToken); // Debugging: Check if the token is retrieved correctly
-
-  // if (!accessToken) {
-  //   console.error("No access token found in localStorage");
-  //   return;
-  // }
-
-  try {
-    const response = await fetch("http://127.0.0.1:5000/auth/users", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`, // Ensure the token is correctly formatted
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch user data: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log( data);
-    return data; // Return the user data if needed
-  } catch (err) {
-    console.error("Error fetching user data:", err);
-  }
-};
 export default function Header() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({})
+  const [logged] = useAuth();  // Assuming `useAuth` returns logged status
 
-  const [logged] = useAuth();
-  // console.log( logged)
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (logged) {
+        const accessToken = localStorage.getItem("access_token");
 
-  const userData = getUserDataFromToken();
-  // console.log("esraa",userData);
+        if (!accessToken) {
+          console.error("No access token found.");
+          return;
+        }
+
+        try {
+          const response = await fetch("http://127.0.0.1:5000/auth/user", {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch user data: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          setUser(data); // Store the user data
+          return data; // Return the user data if needed
+        } catch (err) {
+          console.error("Error fetching user data:", err);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, [logged]);  // Add `logged` as a dependency to re-fetch when login status changes
+
+
+
 
   const [selectedLink, setSelectedLink] = useState("/users"); // لإدارة الرابط المختار
   const handleLinkClick = (href) => {
@@ -75,6 +79,7 @@ export default function Header() {
   const handleLogout = async () => {
     logout();
     navigate("/login");
+    localStorage.clear();
   };
 
   const [state, setState] = useState(false);
@@ -92,7 +97,6 @@ export default function Header() {
 
   return (
     <div className={styles.header}>
-
       {/* NavBar */}
       <Link to="/users">
         <img src={logo} alt="" className={styles.logo} />
@@ -183,31 +187,7 @@ export default function Header() {
                   Name:
                 </Typography>
                 <ListItemText
-                  primary="Esraa Soliman"
-                  sx={{
-                    color: "#555",
-                  }}
-                />
-              </ListItemButton>
-            </ListItem>
-            <ListItem
-              disablePadding
-              sx={{
-                marginBottom: 3,
-              }}
-            >
-              <ListItemButton
-                sx={{
-                  cursor: "context-menu",
-                  display: "flex",
-                  gap: 1,
-                }}
-              >
-                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                  Gmail:
-                </Typography>
-                <ListItemText
-                  primary="Esraa@gmail.com"
+                  primary={user.username}
                   sx={{
                     color: "#555",
                   }}
@@ -231,7 +211,7 @@ export default function Header() {
                   Phone:
                 </Typography>
                 <ListItemText
-                  primary="01146815591"
+                  primary={user.job_name}
                   sx={{
                     color: "#555",
                   }}
