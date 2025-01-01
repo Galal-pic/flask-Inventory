@@ -33,7 +33,7 @@ def create_app():
     cors.init_app(app, resources={r"/*": {"origins": "http://localhost:3000"}})  # Allow CORS for React frontend
     jwt.init_app(app)
 
-    # Initialize flask_restx
+    # Initialize flask_restx ok
     api = Api(app, doc='/docs', title='Warehouse Management API', description='API for managing warehouse operations')
 
     # Register namespaces
