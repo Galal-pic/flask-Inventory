@@ -6,14 +6,17 @@ import {
   Paper,
   InputAdornment,
   IconButton,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import styles from "./Login.module.css";
 import { useNavigate } from "react-router-dom";
-import { login, useAuth } from "../../context/AuthContext";
+import { login } from "../../context/AuthContext";
 import { motion } from "framer-motion";
 import logo from "./logo.png";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 
 const Login = () => {
   const [name, setName] = useState("");
@@ -21,17 +24,21 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
   const navigate = useNavigate();
 
   const handleClickShowPassword = () => {
     setShowPassword((prev) => !prev);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setNameError("");
     setPasswordError("");
+    setSnackbarMessage(""); // Reset snackbar message
 
+    // Input validation
     if (!name) {
       setNameError("Name is required");
       return;
@@ -46,29 +53,38 @@ const Login = () => {
       password: password,
     };
 
-    fetch("http://127.0.0.1:5000/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(dataToSend),
-    })
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error("Network response was not ok");
-        }
-      })
-      .then((data) => {
-        localStorage.setItem("access_token", data.access_token);
-        navigate("/users");
-
-        login(data);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
+    try {
+      const response = await fetch("http://127.0.0.1:5000/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataToSend),
       });
+
+      if (!response.ok) {
+        setSnackbarMessage("Login failed. Please check your credentials.");
+        setOpenSnackbar(true);
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await response.json();
+      localStorage.setItem("access_token", data.access_token);
+      navigate("/users");
+      login(data); // Assuming login is a context or state function
+    } catch (error) {
+      console.error("Error:", error);
+      setSnackbarMessage("Wrong username or password, please try again");
+      setOpenSnackbar(true);
+    }
+  };
+
+  // Close Snackbar
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackbar(false);
   };
   return (
     <div className={styles.container}>
@@ -103,6 +119,7 @@ const Login = () => {
           transition={{ type: "spring", stiffness: 100, damping: 25 }}
         >
           <Paper className={styles.paper}>
+            <LockOutlinedIcon className={styles.icon} />
             <h2 className={styles.subTitle}>Login</h2>
             <Box component="form" className={styles.textFields}>
               {/* Email Field */}
@@ -160,6 +177,15 @@ const Login = () => {
             </Box>
           </Paper>
         </motion.div>
+        <Snackbar
+          open={openSnackbar}
+          onClose={handleCloseSnackbar}
+          autoHideDuration={3000}
+        >
+          <Alert variant="outlined" severity="error">
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </Box>
     </div>
   );

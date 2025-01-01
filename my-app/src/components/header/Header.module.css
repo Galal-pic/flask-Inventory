@@ -16,11 +16,16 @@
 
 .logo {
     height: 70px;
+    width: 120px;
 }
 
 .main-content {
     margin-top: 80px;
     padding: 20px;
+}
+.drawerButton{
+    width: 120px;
+
 }
 
 .header a {

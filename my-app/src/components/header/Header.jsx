@@ -208,7 +208,7 @@ export default function Header() {
                 }}
               >
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                  Phone:
+                  Job:
                 </Typography>
                 <ListItemText
                   primary={user.job_name}

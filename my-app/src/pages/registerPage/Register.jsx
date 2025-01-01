@@ -8,10 +8,17 @@ import {
   IconButton,
   Snackbar,
   Slide,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import styles from "./Register.module.css";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
   const [username, setUserName] = useState("");
@@ -28,6 +35,7 @@ export default function Register() {
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const navigate = useNavigate();
 
   const validatePhone = (phone) => {
     const phoneRegex = /^[0-9]+$/;
@@ -147,6 +155,10 @@ export default function Register() {
     setOpenSnackbar(false);
   };
 
+  const handleBack = () => {
+    navigate(-1)
+  }
+
   return (
     <div className={styles.container}>
       <Box
@@ -156,6 +168,9 @@ export default function Register() {
         className={styles.boxForm}
       >
         <Paper className={styles.paper}>
+          <IconButton className={styles.iconBtn} onClick={handleBack}>
+            <ArrowBackOutlinedIcon className={styles.arrow} />
+          </IconButton>
           <h2 className={styles.subTitle}>Register</h2>
           <Box
             component="form"
@@ -185,17 +200,25 @@ export default function Register() {
               helperText={phoneError}
             />
 
-            {/* Job Field */}
-            <TextField
-              label="Job Name"
-              variant="outlined"
-              required
-              value={jobName}
-              onChange={(e) => setJobName(e.target.value)}
+            {/* Phone Field */}
+            <FormControl
               className={styles.textField}
-              error={!!jobError}
-              helperText={jobError}
-            />
+              variant="outlined"
+              error={!!jobError} // تحديد حالة الخطأ
+            >
+              <InputLabel>Job Name</InputLabel>
+              <Select
+                value={jobName}
+                onChange={(e) => setJobName(e.target.value)}
+                label="Job Name"
+                fullWidth
+              >
+                <MenuItem value="Developer">Developer</MenuItem>
+                <MenuItem value="Manager">Manager</MenuItem>
+              </Select>
+              {!!jobError && <FormHelperText>{jobError}</FormHelperText>}
+            </FormControl>
+
             {/* Password Field */}
             <TextField
               label="Password"
