@@ -22,6 +22,11 @@ login_model = auth_ns.model('Login', {
     'password': fields.String(required=True)
 })
 
+users_model = auth_ns.model('Users', {
+    'username': fields.String(required=True),
+    'phone_number': fields.String(),
+    'job_name': fields.String(required=True)
+})
 update_user_model = auth_ns.model('UpdateUser', {
     'username': fields.String(required=False),
     'password': fields.String(required=False),
@@ -60,6 +65,8 @@ class Register(Resource):
         db.session.add(new_employee)
         db.session.commit()
         return {"message": "Employee registered successfully"}, 201
+    
+
 
 @auth_ns.route('/login')
 class Login(Resource):
@@ -105,3 +112,32 @@ class UserManagement(Resource):
         db.session.delete(employee)
         db.session.commit()
         return {"message": "User deleted successfully"}, 200
+    
+
+
+@auth_ns.route('/users')
+class users(Resource):
+   """ Return ALL data users"""
+   @auth_ns.marshal_list_with(registration_model)
+   @jwt_required()
+   def get(self):
+        """Get employee details"""
+        employee = Employee.query.all()
+        return employee
+
+@auth_ns.route('/user')
+class users(Resource):
+    @jwt_required()
+    def get(self):
+        """return users information by Token"""
+        user_id = get_jwt_identity()  # Get the user ID from the JWT token
+        user = Employee.query.get(user_id)
+        if user:
+            return {
+                "id": user.id,
+                "username": user.username,
+                "job_name": user.job_name,
+                # Add other fields as needed
+            }, 200
+        else:
+            return {"error": "User not found"}, 404
