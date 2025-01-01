@@ -30,29 +30,40 @@ const links = [
 
 const getUserDataFromToken = async () => {
   const accessToken = localStorage.getItem("access_token");
-  console.log(accessToken);
+  // console.log("Access Token:", accessToken); // Debugging: Check if the token is retrieved correctly
+
+  // if (!accessToken) {
+  //   console.error("No access token found in localStorage");
+  //   return;
+  // }
 
   try {
-    const response = await fetch('http://127.0.0.1:5000/user', {
+    const response = await fetch("http://127.0.0.1:5000/auth/users", {
+      method: "GET",
       headers: {
-          Authorization: `Bearer ${accessToken}`,  // Send the token in the header
+        Authorization: `Bearer ${accessToken}`, // Ensure the token is correctly formatted
       },
-  });
-  return response
-  } catch (error) {
-    console.error("Error parsing token payload:", error);
-    return null;
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch user data: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log( data);
+    return data; // Return the user data if needed
+  } catch (err) {
+    console.error("Error fetching user data:", err);
   }
 };
-
 export default function Header() {
   const [user, setUser] = useState(null);
 
   const [logged] = useAuth();
-  console.log( logged)
+  // console.log( logged)
 
   const userData = getUserDataFromToken();
-  console.log("esraa",userData);
+  // console.log("esraa",userData);
 
   const [selectedLink, setSelectedLink] = useState("/users"); // لإدارة الرابط المختار
   const handleLinkClick = (href) => {
@@ -81,6 +92,8 @@ export default function Header() {
 
   return (
     <div className={styles.header}>
+
+      {/* NavBar */}
       <Link to="/users">
         <img src={logo} alt="" className={styles.logo} />
       </Link>
@@ -115,6 +128,7 @@ export default function Header() {
         ))}
       </div>
 
+      {/* Drawer icon */}
       <Button onClick={toggleDrawer(true)} className={styles.drawerButton}>
         <MenuIcon
           sx={{
@@ -123,6 +137,8 @@ export default function Header() {
           }}
         />
       </Button>
+
+      {/* Drawer */}
       <SwipeableDrawer
         anchor="right"
         open={state}

@@ -116,7 +116,7 @@ class UserManagement(Resource):
 class Users(Resource):
     """Return ALL data users"""
     @auth_ns.marshal_list_with(users_model)
-    @jwt_required()
+    # @jwt_required()
     def get(self):
         """Get employee details"""
         employees = Employee.query.all()

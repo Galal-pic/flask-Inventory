@@ -51,136 +51,7 @@ function CustomToolbar() {
   );
 }
 
-const fakeData = [
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-  {
-    id: 2,
-    name: "Galal",
-    email: "galal@gmail.com",
-    job: "manager",
-    phone: "01146815592",
-    password: "123456",
-  },
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-  {
-    id: 1,
-    name: "Esraa",
-    email: "esraa@gmail.com",
-    job: "developer",
-    phone: "01146815591",
-    password: "123456",
-  },
-];
+
 
 export default function Users() {
   const [users, setUsers] = React.useState([]);
@@ -204,7 +75,7 @@ export default function Users() {
 
   // Handle edit click
   const handleEditClick = (id) => {
-    const row = fakeData.find((row) => row.id === id);
+    const row = users.find((row) => row.id === id);
     setEditedRow({ ...row });
   };
 
@@ -241,13 +112,13 @@ export default function Users() {
   };
 
   const columns = [
-    // {
-    //   field: "id",
-    //   headerName: "ID",
-    //   width: 100,
-    // },
     {
-      field: "name",
+      field: "id",
+      headerName: "ID",
+      width: 100,
+    },
+    {
+      field: "username",
       headerName: "Name",
       flex: 1,
       cellClassName: "name-column--cell",
@@ -278,37 +149,7 @@ export default function Users() {
       },
     },
     {
-      field: "email",
-      headerName: "Gmail",
-      flex: 1,
-      renderCell: (params) => {
-        if (editedRow && editedRow.id === params.id) {
-          return (
-            <TextField
-              sx={{
-                marginY: 0.2,
-              }}
-              className={styles.textField}
-              value={editedRow.email}
-              onChange={(e) =>
-                setEditedRow({ ...editedRow, email: e.target.value })
-              }
-              onKeyDown={(e) => {
-                e.stopPropagation();
-              }}
-              slotProps={{
-                input: {
-                  classes: { input: styles.centeredInput },
-                },
-              }}
-            />
-          );
-        }
-        return params.value;
-      },
-    },
-    {
-      field: "job",
+      field: "job_name",
       headerName: "Job",
       flex: 1,
       renderCell: (params) => {
@@ -335,7 +176,7 @@ export default function Users() {
       },
     },
     {
-      field: "phone",
+      field: "phone_number",
       headerName: "Phone",
       flex: 1,
       cellClassName: "name-column--cell",
@@ -350,37 +191,6 @@ export default function Users() {
               value={editedRow.phone}
               onChange={(e) =>
                 setEditedRow({ ...editedRow, phone: e.target.value })
-              }
-              onKeyDown={(e) => {
-                e.stopPropagation();
-              }}
-              slotProps={{
-                input: {
-                  classes: { input: styles.centeredInput },
-                },
-              }}
-            />
-          );
-        }
-        return params.value;
-      },
-    },
-    {
-      field: "password",
-      headerName: "Password",
-      flex: 1,
-      cellClassName: "name-column--cell",
-      renderCell: (params) => {
-        if (editedRow && editedRow.id === params.id) {
-          return (
-            <TextField
-              sx={{
-                marginY: 0.2,
-              }}
-              className={styles.textField}
-              value={editedRow.password}
-              onChange={(e) =>
-                setEditedRow({ ...editedRow, password: e.target.value })
               }
               onKeyDown={(e) => {
                 e.stopPropagation();
@@ -446,12 +256,36 @@ export default function Users() {
   ];
 
   // Data
-  // useEffect(() => {
-  //   fetchData("http://localhost:3001/users")
-  //     .then(setUsers)
-  //     .catch((error) => console.error("حدث خطأ:", error));
-  // }, []);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const accessToken = localStorage.getItem("access_token");
+        if (!accessToken) {
+          console.error("Access token not found");
+          return;
+        }
 
+        const response = await fetch("http://127.0.0.1:5000/auth/users", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // Ensure the token is correctly formatted
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setUsers(data); // Assuming the response contains user data
+      } catch (error) {
+        console.error("حدث خطأ:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+// console.log(users)
   return (
     <div className={styles.container}>
           <h1 className={styles.head}>System Users</h1>
@@ -459,7 +293,7 @@ export default function Users() {
       {/* Button to Add User */}
 
       <DataGrid
-        rows={fakeData}
+        rows={users}
         columns={columns.map((col) => ({
           ...col,
           align: "center",
