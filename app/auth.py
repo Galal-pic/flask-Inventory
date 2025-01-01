@@ -23,6 +23,7 @@ login_model = auth_ns.model('Login', {
 })
 
 users_model = auth_ns.model('Users', {
+    'id': fields.Integer(readOnly=True, description='The user unique identifier'),  # Add this line
     'username': fields.String(required=True),
     'phone_number': fields.String(),
     'job_name': fields.String(required=True)
