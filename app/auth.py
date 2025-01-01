@@ -1,9 +1,9 @@
 from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_cors import cross_origin
 from . import db
 from .models import Employee
-from flask_jwt_extended import jwt_required, get_jwt_identity
 
 # Create namespace
 auth_ns = Namespace('auth', description='Authentication operations')
@@ -27,6 +27,7 @@ users_model = auth_ns.model('Users', {
     'phone_number': fields.String(),
     'job_name': fields.String(required=True)
 })
+
 update_user_model = auth_ns.model('UpdateUser', {
     'username': fields.String(required=False),
     'password': fields.String(required=False),
@@ -48,7 +49,7 @@ class Register(Resource):
         job_name = data.get('job_name')
 
         # Validate required fields
-        if not username or not password  or not job_name:
+        if not username or not password or not job_name:
             auth_ns.abort(400, "Missing required fields")
 
         # Check if username already exists
@@ -65,8 +66,6 @@ class Register(Resource):
         db.session.add(new_employee)
         db.session.commit()
         return {"message": "Employee registered successfully"}, 201
-    
-
 
 @auth_ns.route('/login')
 class Login(Resource):
@@ -83,7 +82,7 @@ class Login(Resource):
 
         access_token = create_access_token(identity=str(employee.id))
         return {"access_token": access_token}, 200
-        
+
 @auth_ns.route('/user/<int:user_id>')
 class UserManagement(Resource):
     @auth_ns.expect(update_user_model)
@@ -104,7 +103,7 @@ class UserManagement(Resource):
         db.session.commit()
 
         return {"message": "User updated successfully"}, 200
-    
+
     @jwt_required()
     def delete(self, user_id):
         """Delete a user"""
@@ -112,24 +111,23 @@ class UserManagement(Resource):
         db.session.delete(employee)
         db.session.commit()
         return {"message": "User deleted successfully"}, 200
-    
-
 
 @auth_ns.route('/users')
-class users(Resource):
-   """ Return ALL data users"""
-   @auth_ns.marshal_list_with(registration_model)
-   @jwt_required()
-   def get(self):
-        """Get employee details"""
-        employee = Employee.query.all()
-        return employee
-
-@auth_ns.route('/user')
-class users(Resource):
+class Users(Resource):
+    """Return ALL data users"""
+    @auth_ns.marshal_list_with(users_model)
     @jwt_required()
     def get(self):
-        """return users information by Token"""
+        """Get employee details"""
+        employees = Employee.query.all()
+        return employees
+
+@auth_ns.route('/user')
+class User(Resource):
+    @cross_origin()  # Enable CORS for this route
+    @jwt_required()
+    def get(self):
+        """Return user information by Token"""
         user_id = get_jwt_identity()  # Get the user ID from the JWT token
         user = Employee.query.get(user_id)
         if user:

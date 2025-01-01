@@ -5,6 +5,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_restx import Api
 from dotenv import load_dotenv
+from datetime import timedelta
 import os
 
 # Load environment variables
@@ -24,11 +25,12 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=6)  # Set token expiration to 6 hours
 
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
-    cors.init_app(app)
+    cors.init_app(app, resources={r"/*": {"origins": "http://localhost:3000"}})  # Allow CORS for React frontend
     jwt.init_app(app)
 
     # Initialize flask_restx
