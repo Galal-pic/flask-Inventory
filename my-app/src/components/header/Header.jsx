@@ -28,16 +28,17 @@ const links = [
   },
 ];
 
-const getUserDataFromToken = () => {
+const getUserDataFromToken = async () => {
   const accessToken = localStorage.getItem("access_token");
   console.log(accessToken);
 
-  const tokenParts = accessToken.split(".");
-  const payload = atob(tokenParts[1]);
-
   try {
-    const decodedPayload = JSON.parse(payload);
-    return decodedPayload;
+    const response = await fetch('http://127.0.0.1:5000/user', {
+      headers: {
+          Authorization: `Bearer ${accessToken}`,  // Send the token in the header
+      },
+  });
+  return response
   } catch (error) {
     console.error("Error parsing token payload:", error);
     return null;
@@ -45,11 +46,13 @@ const getUserDataFromToken = () => {
 };
 
 export default function Header() {
+  const [user, setUser] = useState(null);
+
   const [logged] = useAuth();
-  console.log(logged)
+  console.log( logged)
 
   const userData = getUserDataFromToken();
-  console.log(userData);
+  console.log("esraa",userData);
 
   const [selectedLink, setSelectedLink] = useState("/users"); // لإدارة الرابط المختار
   const handleLinkClick = (href) => {
