@@ -67,7 +67,119 @@ const fakeData = [
     job: "manager",
     phone: "01146815592",
     password: "123456",
-  }
+  },
+  {
+    id: 1,
+    name: "Esraa",
+    email: "esraa@gmail.com",
+    job: "developer",
+    phone: "01146815591",
+    password: "123456",
+  },
+  {
+    id: 1,
+    name: "Esraa",
+    email: "esraa@gmail.com",
+    job: "developer",
+    phone: "01146815591",
+    password: "123456",
+  },
+  {
+    id: 1,
+    name: "Esraa",
+    email: "esraa@gmail.com",
+    job: "developer",
+    phone: "01146815591",
+    password: "123456",
+  },
+  {
+    id: 1,
+    name: "Esraa",
+    email: "esraa@gmail.com",
+    job: "developer",
+    phone: "01146815591",
+    password: "123456",
+  },
+  {
+    id: 1,
+    name: "Esraa",
+    email: "esraa@gmail.com",
+    job: "developer",
+    phone: "01146815591",
+    password: "123456",
+  },
+  {
+    id: 1,
+    name: "Esraa",
+    email: "esraa@gmail.com",
+    job: "developer",
+    phone: "01146815591",
+    password: "123456",
+  },
+  {
+    id: 1,
+    name: "Esraa",
+    email: "esraa@gmail.com",
+    job: "developer",
+    phone: "01146815591",
+    password: "123456",
+  },
+  {
+    id: 1,
+    name: "Esraa",
+    email: "esraa@gmail.com",
+    job: "developer",
+    phone: "01146815591",
+    password: "123456",
+  },
+  {
+    id: 1,
+    name: "Esraa",
+    email: "esraa@gmail.com",
+    job: "developer",
+    phone: "01146815591",
+    password: "123456",
+  },
+  {
+    id: 1,
+    name: "Esraa",
+    email: "esraa@gmail.com",
+    job: "developer",
+    phone: "01146815591",
+    password: "123456",
+  },
+  {
+    id: 1,
+    name: "Esraa",
+    email: "esraa@gmail.com",
+    job: "developer",
+    phone: "01146815591",
+    password: "123456",
+  },
+  {
+    id: 1,
+    name: "Esraa",
+    email: "esraa@gmail.com",
+    job: "developer",
+    phone: "01146815591",
+    password: "123456",
+  },
+  {
+    id: 1,
+    name: "Esraa",
+    email: "esraa@gmail.com",
+    job: "developer",
+    phone: "01146815591",
+    password: "123456",
+  },
+  {
+    id: 1,
+    name: "Esraa",
+    email: "esraa@gmail.com",
+    job: "developer",
+    phone: "01146815591",
+    password: "123456",
+  },
 ];
 
 export default function Users() {
@@ -342,7 +454,8 @@ export default function Users() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.head}>Users</h1>
+          <h1 className={styles.head}>System Users</h1>
+
       {/* Button to Add User */}
 
       <DataGrid
@@ -368,6 +481,7 @@ export default function Users() {
           "& .MuiDataGrid-cell:focus-within": {
             outline: "none",
           },
+          backgroundColor: "white"
         }}
         hideFooter={true}
       />

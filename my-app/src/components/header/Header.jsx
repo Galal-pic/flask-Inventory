@@ -11,6 +11,7 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
+import { jwtDecode } from "jwt-decode";
 
 const links = [
   {
@@ -27,8 +28,34 @@ const links = [
   },
 ];
 
+const getUserDataFromToken = () => {
+  const accessToken = localStorage.getItem("access_token");
+  console.log(accessToken);
+
+  const tokenParts = accessToken.split(".");
+  const payload = atob(tokenParts[1]);
+
+  try {
+    const decodedPayload = JSON.parse(payload);
+    return decodedPayload;
+  } catch (error) {
+    console.error("Error parsing token payload:", error);
+    return null;
+  }
+};
+
 export default function Header() {
-  console.log( );
+  const [logged] = useAuth();
+  console.log(logged)
+
+  const userData = getUserDataFromToken();
+  console.log(userData);
+
+  const [selectedLink, setSelectedLink] = useState("/users"); // لإدارة الرابط المختار
+  const handleLinkClick = (href) => {
+    setSelectedLink(href); // تحديث الرابط المختار
+    navigate(href); // الانتقال للرابط
+  };
 
   const navigate = useNavigate();
   const handleLogout = async () => {
@@ -57,7 +84,7 @@ export default function Header() {
       <div
         style={{
           display: "flex",
-          justifyContent: "center",
+          justifyContent: "space-around",
           gap: "50px",
         }}
       >
@@ -66,19 +93,18 @@ export default function Header() {
             key={link.text}
             style={{
               listStyle: "none",
-              transition: "0.2s",
             }}
           >
             <Link
               style={{
                 textDecoration: "none",
-                color: "black",
+                color: selectedLink === link.href ? "#1976d2" : "black",
                 fontSize: "20px",
-                transition: "0.2s",
+                fontWeight: "bold",
+                marginRight: "20px",
               }}
               to={link.href}
-              onMouseEnter={(e) => (e.target.style.color = "#1976d2")}
-              onMouseLeave={(e) => (e.target.style.color = "black")}
+              onClick={() => handleLinkClick(link.href)}
             >
               {link.text}
             </Link>
@@ -99,6 +125,9 @@ export default function Header() {
         open={state}
         onClose={toggleDrawer(false)}
         onOpen={toggleDrawer(true)}
+        sx={{
+          zIndex: "9999999999999999999999999999999999999",
+        }}
       >
         <Box
           sx={{

@@ -11,7 +11,7 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import styles from "./Login.module.css";
 import { useNavigate } from "react-router-dom";
-import { login } from "../../context/AuthContext";
+import { login, useAuth } from "../../context/AuthContext";
 import { motion } from "framer-motion";
 import logo from "./logo.png";
 
@@ -45,6 +45,7 @@ const Login = () => {
       username: name,
       password: password,
     };
+
     fetch("http://127.0.0.1:5000/auth/login", {
       method: "POST",
       headers: {
@@ -60,16 +61,17 @@ const Login = () => {
         }
       })
       .then((data) => {
-        console.log("access_Token", data);
+        console.log("access_Token", data.access_token);
         navigate("/users");
-        login(data.access_token);
+
+        login(data);
       })
       .catch((error) => {
-        // setFormError(error.message);
         console.error("Error:", error);
       });
   };
-
+  const [loged] = useAuth();
+  console.log(loged)
   return (
     <div className={styles.container}>
       <div className={styles.boxText}>
@@ -148,8 +150,6 @@ const Login = () => {
                   Please, Try again
                 </p>
               )} */}
-
-              
               {/* Submit Button */}
               <Button
                 type="submit"
