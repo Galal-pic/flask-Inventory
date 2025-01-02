@@ -88,6 +88,7 @@ export default function Users() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackBarType, setSnackBarType] = useState("");
 
+<<<<<<< HEAD
   const fetchData = async (url, method = "GET", body = null) => {
     const accessToken = localStorage.getItem("access_token");
 
@@ -99,6 +100,18 @@ export default function Users() {
       const response = await fetch(url, {
         method,
         headers,
+=======
+  // Fetch data from API
+  const fetchData = async (url, method = "GET", body = null) => {
+    const accessToken = localStorage.getItem("access_token");
+
+    try {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+>>>>>>> fffb85692ba9f2b31f95efa51e63f24410d2a8a9
         body: body ? JSON.stringify(body) : null,
       });
       if (!response.ok) throw new Error("حدث خطأ أثناء العملية");
@@ -179,8 +192,13 @@ export default function Users() {
     );
     if (!isConfirmed) return;
 
+    const accessToken = localStorage.getItem("access_token");
+
     try {
+<<<<<<< HEAD
       const accessToken = localStorage.getItem("access_token");
+=======
+>>>>>>> fffb85692ba9f2b31f95efa51e63f24410d2a8a9
       const response = await fetch(`${API_BASE_URL}/user/${id}`, {
         method: "DELETE",
         headers: {
@@ -189,10 +207,20 @@ export default function Users() {
       });
 
       if (!response.ok) {
+<<<<<<< HEAD
         throw new Error(`Failed to delete user: ${response.status}`);
       }
 
       // Update the state to remove the deleted user
+=======
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete user");
+      }
+
+      setOpenSnackbar(true);
+      setSnackbarMessage("User deleted successfully");
+      setSnackBarType("success");
+>>>>>>> fffb85692ba9f2b31f95efa51e63f24410d2a8a9
       setUsers((prevRows) => prevRows.filter((row) => row.id !== id));
 
       // Show success message
@@ -200,11 +228,17 @@ export default function Users() {
       setSnackbarMessage("User deleted successfully");
       setSnackBarType("success");
     } catch (error) {
+<<<<<<< HEAD
       console.error("An error occurred while deleting the user: ", error);
 
       // Show error message
       setOpenSnackbar(true);
       setSnackbarMessage("Error deleting user");
+=======
+      console.error("Error deleting user:", error);
+      setOpenSnackbar(true);
+      setSnackbarMessage(error.message || "Error deleting user");
+>>>>>>> fffb85692ba9f2b31f95efa51e63f24410d2a8a9
       setSnackBarType("error");
     }
   };
@@ -400,7 +434,10 @@ export default function Users() {
         open={openSnackbar}
         autoHideDuration={2000}
         onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        sx={{
+          zIndex: "9999999999999999999999999999999999",
+        }}
       >
         <Alert onClose={() => setOpenSnackbar(false)} severity={snackBarType}>
           {snackbarMessage}
