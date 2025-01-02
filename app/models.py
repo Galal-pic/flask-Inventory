@@ -2,40 +2,25 @@ from datetime import datetime
 from . import db
 
 class Employee(db.Model):
+    __tablename__ = 'employee'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False, index=True)  # Index for faster lookups
     password_hash = db.Column(db.String(120), nullable=False)
     phone_number = db.Column(db.String(20))
     job_name = db.Column(db.String(100), nullable=False)
-    invoices = db.relationship('Invoice', backref='employee', lazy=True)  # Relationship to Invoice
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "username": self.username,
-            "phone_number": self.phone_number,
-            "job_name": self.job_name
-        }
+    invoices = db.relationship('Invoice', backref='employee', lazy=True)
 
 class Inventory(db.Model):
+    __tablename__ = 'inventory'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
+    name = db.Column(db.String(120), nullable=False, index=True)  # Index for faster lookups
     quantity = db.Column(db.Integer, nullable=False)
     price = db.Column(db.Float, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    def serialize(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "quantity": self.quantity,
-            "price": self.price,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat()
-        }
-
 class Invoice(db.Model):
+    __tablename__ = 'invoice'
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -44,43 +29,17 @@ class Invoice(db.Model):
     client_name = db.Column(db.String(50))
     Warehouse_manager = db.Column(db.String(255))
     total_amount = db.Column(db.Float)
-    Employee_Name = db.Column(db.String(50), nullable=False)
+    Employee_Name = db.Column(db.String(50), nullable=False)  # Ensure this column exists
     employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
     items = db.relationship('InvoiceItem', backref='invoice', cascade='all, delete-orphan')
 
-    def serialize(self):
-        return {
-            "id": self.id,
-            "type": self.type,
-            "created_at": self.created_at.isoformat(),
-            "machine_name": self.machine_name,
-            "mechanism": self.mechanism,
-            "client_name": self.client_name,
-            "Warehouse_manager": self.Warehouse_manager,
-            "total_amount": self.total_amount,
-            "Employee_Name": self.Employee_Name,
-            "employee_id": self.employee_id,
-            "items": [item.serialize() for item in self.items]
-        }
-
 class InvoiceItem(db.Model):
+    __tablename__ = 'invoice_item'
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
+    name = db.Column(db.String(120), nullable=False, index=True)  # Index for faster lookups
     item_bar = db.Column(db.String(100))
     quantity = db.Column(db.Integer)
     price = db.Column(db.Float)
     total_price = db.Column(db.Float)
     description = db.Column(db.Text)
     invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False)
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "item_bar": self.item_bar,
-            "quantity": self.quantity,
-            "price": self.price,
-            "total_price": self.total_price,
-            "description": self.description,
-            "invoice_id": self.invoice_id
-        }

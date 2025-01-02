@@ -25,15 +25,15 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=6)  # Set token expiration to 6 hours
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=6)  # Token expiration
 
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
-    cors.init_app(app, resources={r"/*": {"origins": "http://localhost:3000"}})  # Allow CORS for React frontend
+    cors.init_app(app, resources={r"/*": {"origins": "http://localhost:3000"}})  # Allow CORS
     jwt.init_app(app)
 
-    # Initialize flask_restx ok
+    # Initialize Flask-RestX API
     api = Api(app, doc='/docs', title='Warehouse Management API', description='API for managing warehouse operations')
 
     # Register namespaces
