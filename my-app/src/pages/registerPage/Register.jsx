@@ -13,6 +13,7 @@ import {
   Select,
   MenuItem,
   FormHelperText,
+  Alert,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -35,6 +36,8 @@ export default function Register() {
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackBarType, setSnackBarType] = useState("");
+
   const navigate = useNavigate();
 
   const validatePhone = (phone) => {
@@ -113,6 +116,21 @@ export default function Register() {
       body: JSON.stringify(dataToSend),
     })
       .then((response) => {
+        if (response.status === 400) {
+          response.json().then((data) => {
+            setOpenSnackbar(true);
+            setSnackBarType("info");
+            setSnackbarMessage(data.message || "Validation error occurred");
+          });
+        }
+        console.log("Response status:", response.status);
+
+        if (response.status === 201) {
+          response.json().then((data) => {
+            navigate("/users");
+          });
+        }
+
         if (response.ok) {
           return response.json();
         } else {
@@ -134,30 +152,9 @@ export default function Register() {
       });
   };
 
-  // Custom Slide transition
-  function SlideTransition(props) {
-    return (
-      <Slide
-        {...props}
-        direction="bottom"
-        sx={{
-          backgroundColor: "white",
-          color: "#1976d2",
-        }}
-      />
-    );
-  }
-  // Close Snackbar
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackbar(false);
-  };
-
   const handleBack = () => {
-    navigate(-1)
-  }
+    navigate(-1);
+  };
 
   return (
     <div className={styles.container}>
@@ -275,26 +272,17 @@ export default function Register() {
 
       <Snackbar
         open={openSnackbar}
-        onClose={handleCloseSnackbar}
-        TransitionComponent={SlideTransition}
-        message={snackbarMessage}
-        autoHideDuration={2000}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        sx={{
-          zIndex: "9999999999999999999999999999999999999999999999"
-        }}
-
-      />
-        {/* <Snackbar
-        open={openSnackbar}
         autoHideDuration={2000}
         onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        sx={{
+          zIndex: "99999999999999999999999999999999999999",
+        }}
       >
         <Alert onClose={() => setOpenSnackbar(false)} severity={snackBarType}>
           {snackbarMessage}
         </Alert>
-      </Snackbar> */}
+      </Snackbar>
     </div>
   );
 }

@@ -80,7 +80,6 @@ function CustomToolbar() {
   );
 }
 
-
 export default function Users() {
   const API_BASE_URL = "http://127.0.0.1:5000/auth";
   const [users, setUsers] = useState([]);
@@ -89,18 +88,18 @@ export default function Users() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackBarType, setSnackBarType] = useState("");
 
-
-
+  // Fetch data from API
   const fetchData = async (url, method = "GET", body = null) => {
     const accessToken = localStorage.getItem("access_token");
 
-    const headers = {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    };
-
     try {
-      const response = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : null });
+      const response = await fetch(url, {
+        method,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: body ? JSON.stringify(body) : null,
+      });
       if (!response.ok) throw new Error("حدث خطأ أثناء العملية");
       return await response.json();
     } catch (error) {
@@ -116,7 +115,7 @@ export default function Users() {
     const phoneRegex = /^[0-9]{10,15}$/;
     return phoneRegex.test(phone);
   };
-  
+
   const validateFields = (row) => {
     if (!row.username) return "Username is required";
     if (!row.job_name) return "Job name is required";
@@ -124,10 +123,10 @@ export default function Users() {
     if (!validatePhone(row.phone_number)) return "Invalid phone number";
     return null; // يعني أن التحقق نجح
   };
-  
+
   const handleSave = async (id) => {
     const error = validateFields(editedRow);
-  
+
     if (error) {
       setOpenSnackbar(true);
       setSnackbarMessage(error);
@@ -135,15 +134,15 @@ export default function Users() {
       setEditedRow(null);
       return;
     }
-  
+
     const updatedRows = users.map((row) =>
       row.id === id ? { ...row, ...editedRow } : row
     );
-  
+
     setUsers(updatedRows);
-  
+
     const accessToken = localStorage.getItem("access_token");
-  
+
     try {
       const { username, job_name, phone_number } = editedRow;
       const response = await fetch(`${API_BASE_URL}/user/${id}`, {
@@ -154,11 +153,11 @@ export default function Users() {
         },
         body: JSON.stringify({ username, job_name, phone_number }),
       });
-  
+
       if (!response.ok) {
         throw new Error(`Failed to update user: ${response.status}`);
       }
-  
+
       setOpenSnackbar(true);
       setSnackbarMessage("User updated successfully");
       setSnackBarType("success");
@@ -167,23 +166,41 @@ export default function Users() {
       setOpenSnackbar(true);
       setSnackbarMessage("Error updating user");
       setSnackBarType("error");
-      
     }
-  
+
     setEditedRow(null);
   };
-  
-  
 
   const handleDelete = async (id) => {
-    const isConfirmed = window.confirm("Are you sure you want to delete this user?");
+    const isConfirmed = window.confirm(
+      "Are you sure you want to delete this user?"
+    );
     if (!isConfirmed) return;
 
+    const accessToken = localStorage.getItem("access_token");
+
     try {
-      await fetchData(`${API_BASE_URL}/user/${id}`, "DELETE");
+      const response = await fetch(`${API_BASE_URL}/user/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete user");
+      }
+
+      setOpenSnackbar(true);
+      setSnackbarMessage("User deleted successfully");
+      setSnackBarType("success");
       setUsers((prevRows) => prevRows.filter((row) => row.id !== id));
     } catch (error) {
-      console.error("An error occurred while deleting the user: ", error);
+      console.error("Error deleting user:", error);
+      setOpenSnackbar(true);
+      setSnackbarMessage(error.message || "Error deleting user");
+      setSnackBarType("error");
     }
   };
 
@@ -203,7 +220,9 @@ export default function Users() {
             <TextField
               sx={{ marginY: 0.2 }}
               value={editedRow.username || ""}
-              onChange={(e) => setEditedRow({ ...editedRow, username: e.target.value })}
+              onChange={(e) =>
+                setEditedRow({ ...editedRow, username: e.target.value })
+              }
             />
           );
         }
@@ -219,7 +238,9 @@ export default function Users() {
           return (
             <Select
               value={editedRow.job_name || ""}
-              onChange={(e) => setEditedRow({ ...editedRow, job_name: e.target.value })}
+              onChange={(e) =>
+                setEditedRow({ ...editedRow, job_name: e.target.value })
+              }
             >
               <MenuItem value="Developer">Developer</MenuItem>
               <MenuItem value="Manager">Manager</MenuItem>
@@ -239,7 +260,9 @@ export default function Users() {
             <TextField
               sx={{ marginY: 0.2 }}
               value={editedRow.phone_number || ""}
-              onChange={(e) => setEditedRow({ ...editedRow, phone_number: e.target.value })}
+              onChange={(e) =>
+                setEditedRow({ ...editedRow, phone_number: e.target.value })
+              }
             />
           );
         }
@@ -372,7 +395,10 @@ export default function Users() {
         open={openSnackbar}
         autoHideDuration={2000}
         onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        sx={{
+          zIndex: "9999999999999999999999999999999999",
+        }}
       >
         <Alert onClose={() => setOpenSnackbar(false)} severity={snackBarType}>
           {snackbarMessage}
