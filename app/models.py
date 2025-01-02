@@ -37,13 +37,14 @@ class Inventory(db.Model):
 
 class Invoice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String(20), nullable=False)
+    type = db.Column(db.String(50), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    machine_name = db.Column(db.String(255), nullable=False)
-    mechanism = db.Column(db.String(255), nullable=False)
+    machine_name = db.Column(db.String(255))
+    mechanism = db.Column(db.String(255))
     client_name = db.Column(db.String(50))
     Warehouse_manager = db.Column(db.String(255))
     total_amount = db.Column(db.Float)
+    Employee_Name = db.Column(db.String(50), nullable=False)
     employee_id = db.Column(db.Integer, db.ForeignKey('employee.id'), nullable=False)
     items = db.relationship('InvoiceItem', backref='invoice', cascade='all, delete-orphan')
 
@@ -57,6 +58,7 @@ class Invoice(db.Model):
             "client_name": self.client_name,
             "Warehouse_manager": self.Warehouse_manager,
             "total_amount": self.total_amount,
+            "Employee_Name": self.Employee_Name,
             "employee_id": self.employee_id,
             "items": [item.serialize() for item in self.items]
         }
@@ -64,10 +66,11 @@ class Invoice(db.Model):
 class InvoiceItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
-    item_bar = db.Column(db.String(20), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    description = db.Column(db.Text, nullable=True)  # Added description column
+    item_bar = db.Column(db.String(100))
+    quantity = db.Column(db.Integer)
+    price = db.Column(db.Float)
+    total_price = db.Column(db.Float)
+    description = db.Column(db.Text)
     invoice_id = db.Column(db.Integer, db.ForeignKey('invoice.id'), nullable=False)
 
     def serialize(self):
@@ -77,6 +80,7 @@ class InvoiceItem(db.Model):
             "item_bar": self.item_bar,
             "quantity": self.quantity,
             "price": self.price,
+            "total_price": self.total_price,
             "description": self.description,
             "invoice_id": self.invoice_id
         }
