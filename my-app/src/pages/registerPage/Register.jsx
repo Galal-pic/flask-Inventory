@@ -139,7 +139,7 @@ export default function Register() {
     return (
       <Slide
         {...props}
-        direction="up"
+        direction="bottom"
         sx={{
           backgroundColor: "white",
           color: "#1976d2",
@@ -278,8 +278,23 @@ export default function Register() {
         onClose={handleCloseSnackbar}
         TransitionComponent={SlideTransition}
         message={snackbarMessage}
-        autoHideDuration={3000}
+        autoHideDuration={2000}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        sx={{
+          zIndex: "9999999999999999999999999999999999999999999999"
+        }}
+
       />
+        {/* <Snackbar
+        open={openSnackbar}
+        autoHideDuration={2000}
+        onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+      >
+        <Alert onClose={() => setOpenSnackbar(false)} severity={snackBarType}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar> */}
     </div>
   );
 }

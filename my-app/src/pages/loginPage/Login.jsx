@@ -180,12 +180,14 @@ const Login = () => {
         <Snackbar
           open={openSnackbar}
           onClose={handleCloseSnackbar}
-          autoHideDuration={3000}
+          autoHideDuration={2000}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
         >
           <Alert variant="outlined" severity="error">
             {snackbarMessage}
           </Alert>
         </Snackbar>
+
       </Box>
     </div>
   );

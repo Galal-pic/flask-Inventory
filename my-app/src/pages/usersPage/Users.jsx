@@ -19,6 +19,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
+
 function CustomToolbar() {
   const navigate = useNavigate();
 
@@ -79,70 +80,112 @@ function CustomToolbar() {
   );
 }
 
+
 export default function Users() {
   const API_BASE_URL = "http://127.0.0.1:5000/auth";
-  const [users, setUsers] = React.useState([]);
+  const [users, setUsers] = useState([]);
   const [editedRow, setEditedRow] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackBarType, setSnackBarType] = useState("");
 
-  // Fetch data from API
+
+
   const fetchData = async (url, method = "GET", body = null) => {
     const accessToken = localStorage.getItem("access_token");
 
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    };
+
     try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          Authorization: `Bearer ${accessToken}`, // Ensure the token is correctly formatted
-        },        body: body ? JSON.stringify(body) : null,
-      });
+      const response = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : null });
       if (!response.ok) throw new Error("حدث خطأ أثناء العملية");
       return await response.json();
     } catch (error) {
       throw error;
     }
   };
-  
 
-  // Handle edit click
   const handleEditClick = (id) => {
     const row = users.find((row) => row.id === id);
     setEditedRow({ ...row });
   };
-
-  // Save changes to a user
-  const handleSave = async (id) => {
-    const updatedRows = users.map((row) =>
-      row.id === id ? { ...row, ...editedRow } : row // تحديث المستخدم المُعدل
-    );
-    setUsers(updatedRows); // تحديث الواجهة
-  
-    try {
-      await fetchData(`http://localhost:3001/users/${id}`, "PUT", editedRow); // تحديث البيانات في الـ API
-      setOpenSnackbar(true); // عرض إشعار النجاح
-    } catch (error) {
-      console.error("حدث خطأ أثناء تحديث البيانات:", error);
-    }
-  
-    setEditedRow(null); // إخفاء النافذة بعد التحديث
+  const validatePhone = (phone) => {
+    const phoneRegex = /^[0-9]{10,15}$/;
+    return phoneRegex.test(phone);
   };
   
-
-  // Delete a user
-  const handleDelete = async (id) => {
-    const isConfirmed = window.confirm(
-      "Are you sure you want to delete this user?"
+  const validateFields = (row) => {
+    if (!row.username) return "Username is required";
+    if (!row.job_name) return "Job name is required";
+    if (!row.phone_number) return "Phone number is required";
+    if (!validatePhone(row.phone_number)) return "Invalid phone number";
+    return null; // يعني أن التحقق نجح
+  };
+  
+  const handleSave = async (id) => {
+    const error = validateFields(editedRow);
+  
+    if (error) {
+      setOpenSnackbar(true);
+      setSnackbarMessage(error);
+      setSnackBarType("error");
+      setEditedRow(null);
+      return;
+    }
+  
+    const updatedRows = users.map((row) =>
+      row.id === id ? { ...row, ...editedRow } : row
     );
-    if (!isConfirmed) return;
+  
+    setUsers(updatedRows);
+  
+    const accessToken = localStorage.getItem("access_token");
   
     try {
-      await fetchData(`${API_BASE_URL}/users/${id}`, "DELETE");
+      const { username, job_name, phone_number } = editedRow;
+      const response = await fetch(`${API_BASE_URL}/user/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ username, job_name, phone_number }),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Failed to update user: ${response.status}`);
+      }
+  
+      setOpenSnackbar(true);
+      setSnackbarMessage("User updated successfully");
+      setSnackBarType("success");
+    } catch (error) {
+      console.error("Error updating user:", error);
+      setOpenSnackbar(true);
+      setSnackbarMessage("Error updating user");
+      setSnackBarType("error");
+      
+    }
+  
+    setEditedRow(null);
+  };
+  
+  
+
+  const handleDelete = async (id) => {
+    const isConfirmed = window.confirm("Are you sure you want to delete this user?");
+    if (!isConfirmed) return;
+
+    try {
+      await fetchData(`${API_BASE_URL}/user/${id}`, "DELETE");
       setUsers((prevRows) => prevRows.filter((row) => row.id !== id));
     } catch (error) {
       console.error("An error occurred while deleting the user: ", error);
     }
   };
-  
 
   const columns = [
     {
@@ -154,27 +197,13 @@ export default function Users() {
       field: "username",
       headerName: "Name",
       flex: 1,
-      cellClassName: "name-column--cell",
       renderCell: (params) => {
         if (editedRow && editedRow.id === params.id) {
           return (
             <TextField
-              sx={{
-                marginY: 0.2,
-              }}
-              className={styles.textField}
-              value={editedRow.username}
-              onChange={(e) =>
-                setEditedRow({ ...editedRow, name: e.target.value })
-              }
-              onKeyDown={(e) => {
-                e.stopPropagation();
-              }}
-              slotProps={{
-                input: {
-                  classes: { input: styles.centeredInput },
-                },
-              }}
+              sx={{ marginY: 0.2 }}
+              value={editedRow.username || ""}
+              onChange={(e) => setEditedRow({ ...editedRow, username: e.target.value })}
             />
           );
         }
@@ -190,14 +219,7 @@ export default function Users() {
           return (
             <Select
               value={editedRow.job_name || ""}
-              onChange={(e) =>
-                setEditedRow({ ...editedRow, job_name: e.target.value })
-              }
-              displayEmpty
-              sx={{
-                width: "100%",
-                fontSize: "1rem",
-              }}
+              onChange={(e) => setEditedRow({ ...editedRow, job_name: e.target.value })}
             >
               <MenuItem value="Developer">Developer</MenuItem>
               <MenuItem value="Manager">Manager</MenuItem>
@@ -211,27 +233,13 @@ export default function Users() {
       field: "phone_number",
       headerName: "Phone",
       flex: 1,
-      cellClassName: "name-column--cell",
       renderCell: (params) => {
         if (editedRow && editedRow.id === params.id) {
           return (
             <TextField
-              sx={{
-                marginY: 0.2,
-              }}
-              className={styles.textField}
-              value={editedRow.phone_number}
-              onChange={(e) =>
-                setEditedRow({ ...editedRow, phone: e.target.value })
-              }
-              onKeyDown={(e) => {
-                e.stopPropagation();
-              }}
-              slotProps={{
-                input: {
-                  classes: { input: styles.centeredInput },
-                },
-              }}
+              sx={{ marginY: 0.2 }}
+              value={editedRow.phone_number || ""}
+              onChange={(e) => setEditedRow({ ...editedRow, phone_number: e.target.value })}
             />
           );
         }
@@ -295,53 +303,25 @@ export default function Users() {
     },
   ];
 
-  // Data
   useEffect(() => {
-    let isMounted = true;
-
     const fetchUserData = async () => {
       const accessToken = localStorage.getItem("access_token");
+      if (!accessToken) return;
+
       try {
-        if (!accessToken) {
-          console.error("Access token not found");
-          return;
-        }
-
-        const response = await fetch("http://127.0.0.1:5000/auth/users", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`, // Ensure the token is correctly formatted
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        if (isMounted) {
-          setUsers(data); // Assuming the response contains user data
-        }
+        const data = await fetchData(`${API_BASE_URL}/users`, "GET");
+        setUsers(data);
       } catch (error) {
-        if (isMounted) {
-          console.error("حدث خطأ:", error);
-        }
+        console.error("Error fetching data:", error);
       }
     };
 
     fetchUserData();
-
-    return () => {
-      isMounted = false; // Cleanup on unmount
-    };
   }, []);
 
   return (
     <div className={styles.container}>
       <h1 className={styles.head}>Employee Management</h1>
-
-      {/* Button to Add User */}
-
       <DataGrid
         rows={users}
         columns={columns.map((col) => ({
@@ -394,8 +374,8 @@ export default function Users() {
         onClose={() => setOpenSnackbar(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       >
-        <Alert onClose={() => setOpenSnackbar(false)} severity="success">
-          Changes saved successfully
+        <Alert onClose={() => setOpenSnackbar(false)} severity={snackBarType}>
+          {snackbarMessage}
         </Alert>
       </Snackbar>
     </div>

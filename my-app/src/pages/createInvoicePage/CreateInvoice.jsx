@@ -440,19 +440,19 @@ export default function Type1() {
                   اسم الصنف / Item Name
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold", width: "auto" }}>
-                  السعر / Price
-                </TableCell>
+                  الرمز / Barcode
+                </TableCell>{" "}
                 <TableCell sx={{ fontWeight: "bold", width: "auto" }}>
                   الكمية / Quantity
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold", width: "auto" }}>
-                  بيان / Description
-                </TableCell>
-                <TableCell sx={{ fontWeight: "bold", width: "auto" }}>
-                  شريط العناصر / Items Bar
+                  السعر / Price
                 </TableCell>
                 <TableCell sx={{ fontWeight: "bold", width: "auto" }}>
                   إجمالى السعر / Total Price
+                </TableCell>
+                <TableCell sx={{ fontWeight: "bold", width: "auto" }}>
+                  بيان / Description
                 </TableCell>
               </TableRow>
 

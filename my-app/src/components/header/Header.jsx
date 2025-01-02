@@ -15,7 +15,7 @@ import { jwtDecode } from "jwt-decode";
 
 const links = [
   {
-    text: "Users",
+    text: "Employees",
     href: "/users",
   },
   {
@@ -208,7 +208,7 @@ export default function Header() {
                 }}
               >
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                  Job:
+                  Role:
                 </Typography>
                 <ListItemText
                   primary={user.job_name}
