@@ -21,20 +21,22 @@ inventory_model = inventory_ns.model('Inventory', {
 # Invoice item model for API documentation
 invoice_item_model = invoice_ns.model('InvoiceItem', {
     'name': fields.String(required=True),
-    'item_bar': fields.String(required=True),
-    'quantity': fields.Integer(required=True),
-    'price': fields.Float(required=True),
-    'description': fields.String(required=False)  # Added description field
+    'item_bar': fields.String(required=False),
+    'quantity': fields.Integer(required=False),
+    'price': fields.Float(required=False),
+    'total_price': fields.Float(required=False),
+    'description': fields.String(required=False)
 })
 
 # Invoice model for API documentation
 invoice_model = invoice_ns.model('Invoice', {
     'type': fields.String(required=True),
-    'machine_name': fields.String(required=True),
-    'mechanism': fields.String(required=True),
+    'machine_name': fields.String(required=False),
+    'mechanism': fields.String(required=False),
     'client_name': fields.String(required=False),
     'Warehouse_manager': fields.String(required=False),
     'total_amount': fields.Float(required=False),
+    'Employee_Name': fields.String(required=True),
     'items': fields.List(fields.Nested(invoice_item_model))
 })
 
@@ -75,21 +77,23 @@ class InvoiceList(Resource):
         employee_id = get_jwt_identity()
         new_invoice = Invoice(
             type=data['type'],
-            machine_name=data['machine_name'],
-            mechanism=data['mechanism'],
+            machine_name=data.get('machine_name'),
+            mechanism=data.get('mechanism'),
             client_name=data.get('client_name'),
             Warehouse_manager=data.get('Warehouse_manager'),
             total_amount=data.get('total_amount'),
+            Employee_Name=data['Employee_Name'],
             employee_id=employee_id
         )
 
         for item_data in data['items']:
             new_item = InvoiceItem(
                 name=item_data['name'],
-                item_bar=item_data['item_bar'],
-                quantity=item_data['quantity'],
-                price=item_data['price'],
-                description=item_data.get('description'),  # Added description
+                item_bar=item_data.get('item_bar'),
+                quantity=item_data.get('quantity'),
+                price=item_data.get('price'),
+                total_price=item_data.get('total_price'),
+                description=item_data.get('description'),
                 invoice=new_invoice
             )
             db.session.add(new_item)
@@ -115,12 +119,14 @@ class InvoiceDetail(Resource):
         data = invoice_ns.payload
         invoice = Invoice.query.get_or_404(invoice_id)
 
+        # Update invoice fields
         invoice.type = data['type']
-        invoice.machine_name = data['machine_name']
-        invoice.mechanism = data['mechanism']
+        invoice.machine_name = data.get('machine_name')
+        invoice.mechanism = data.get('mechanism')
         invoice.client_name = data.get('client_name')
         invoice.Warehouse_manager = data.get('Warehouse_manager')
         invoice.total_amount = data.get('total_amount')
+        invoice.Employee_Name = data['Employee_Name']
 
         # Update or add items
         for item_data in data['items']:
@@ -128,17 +134,19 @@ class InvoiceDetail(Resource):
                 item = InvoiceItem.query.get(item_data['id'])
                 if item:
                     item.name = item_data['name']
-                    item.item_bar = item_data['item_bar']
-                    item.quantity = item_data['quantity']
-                    item.price = item_data['price']
-                    item.description = item_data.get('description')  # Added description
+                    item.item_bar = item_data.get('item_bar')
+                    item.quantity = item_data.get('quantity')
+                    item.price = item_data.get('price')
+                    item.total_price = item_data.get('total_price')
+                    item.description = item_data.get('description')
             else:  # Add new item
                 new_item = InvoiceItem(
                     name=item_data['name'],
-                    item_bar=item_data['item_bar'],
-                    quantity=item_data['quantity'],
-                    price=item_data['price'],
-                    description=item_data.get('description'),  # Added description
+                    item_bar=item_data.get('item_bar'),
+                    quantity=item_data.get('quantity'),
+                    price=item_data.get('price'),
+                    total_price=item_data.get('total_price'),
+                    description=item_data.get('description'),
                     invoice=invoice
                 )
                 db.session.add(new_item)

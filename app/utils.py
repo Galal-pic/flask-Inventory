@@ -3,10 +3,10 @@ def validate_inventory_data(data):
     return all(field in data for field in required_fields)
 
 def validate_invoice_data(data):
-    required_fields = ['type', 'machine_name', 'mechanism', 'items']
+    required_fields = ['type', 'Employee_Name', 'items']
     if not all(field in data for field in required_fields):
         return False
     for item in data['items']:
-        if not all(key in item for key in ['name', 'item_bar', 'quantity', 'price']):
+        if 'name' not in item:  # Ensure 'name' is present in each item
             return False
     return True
