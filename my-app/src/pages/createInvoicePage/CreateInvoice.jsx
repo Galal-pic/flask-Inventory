@@ -359,7 +359,7 @@ export default function Type1() {
     const isValid = items.every((item) => item.itemName.trim() !== "");
     if (!isValid) {
       setOpenSnackbar(true);
-      setSnackbarMessage("Item name cannot be empty");
+      setSnackbarMessage("You must add at least one item !");
       setSnackBarType("error");
       return;
     }
