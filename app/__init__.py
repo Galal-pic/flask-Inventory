@@ -25,12 +25,12 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URI')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=6)  # Token expiration
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=6)
 
     # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
-    cors.init_app(app, resources={r"/*": {"origins": "http://localhost:3000"}})  # Allow CORS
+    cors.init_app(app, resources={r"/*": {"origins": "http://localhost:3000"}})
     jwt.init_app(app)
 
     # Initialize Flask-RestX API

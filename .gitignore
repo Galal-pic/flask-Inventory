@@ -159,8 +159,4 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 *.db
-<<<<<<< HEAD
-/instance/warehouse.db
-=======
-/instance/warehouse.db
->>>>>>> b5cf90e858083eca1b18141d58404be391298aa3
+instance/warehouse.db
