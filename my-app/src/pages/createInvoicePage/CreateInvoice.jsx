@@ -372,11 +372,14 @@ export default function Type1() {
       client_name: clientName,
       Warehouse_manager: warehouseManager,
       total_amount: parseFloat(totalAmount),
+      Employee_Name: user.username,
       items: items.map((item) => ({
         name: item.itemName,
         item_bar: item.itemsBar,
         quantity: item.quantity ? parseFloat(item.quantity) : 0,
         price: item.price ? parseFloat(item.price) : 0,
+        total_price: item.totalPrice ? parseFloat(item.totalPrice) : 0,
+        description: item.description
       })),
     };
 
