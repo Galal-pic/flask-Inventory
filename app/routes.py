@@ -63,13 +63,6 @@ class InventoryList(Resource):
 # Invoice Endpoints
 @invoice_ns.route('/')
 class InvoiceList(Resource):
-    @invoice_ns.marshal_list_with(invoice_model)
-    @jwt_required()
-    def get(self):
-        """Get all invoices"""
-        invoices = Invoice.query.all()
-        return invoices
-
     @invoice_ns.expect(invoice_model)
     @invoice_ns.marshal_with(invoice_model)
     @jwt_required()
@@ -83,6 +76,7 @@ class InvoiceList(Resource):
 
         # Extract invoice fields from the payload
         invoice_data = {
+            "id": data.get("id"),  # Accept the ID from the frontend
             "type": data["type"],
             "machine_name": data.get("machine_name"),
             "mechanism": data.get("mechanism"),
@@ -164,3 +158,13 @@ class InvoiceDetail(Resource):
         db.session.delete(invoice)
         db.session.commit()
         return {"message": "Invoice deleted successfully"}, 200
+    
+@invoice_ns.route('/last-id')
+class LastInvoiceId(Resource):
+    @jwt_required()
+    def get(self):
+        """Get the last invoice ID"""
+        last_invoice = Invoice.query.order_by(Invoice.id.desc()).first()
+        if last_invoice:
+            return {"last_id": last_invoice.id+1}, 200
+        return {"last_id": 0}, 200  # If no invoices exist, return 0
