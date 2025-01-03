@@ -197,11 +197,6 @@ export default function Users() {
       setSnackbarMessage("User deleted successfully");
       setSnackBarType("success");
       setUsers((prevRows) => prevRows.filter((row) => row.id !== id));
-
-      // Show success message
-      setOpenSnackbar(true);
-      setSnackbarMessage("User deleted successfully");
-      setSnackBarType("success");
     } catch (error) {
       console.error("Error deleting user:", error);
       setOpenSnackbar(true);
