@@ -11,26 +11,25 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
-import { jwtDecode } from "jwt-decode";
 
 const links = [
   {
-    text: "Employees",
-    href: "/users",
+    text: "الفواتير",
+    href: "/invoices",
   },
   {
-    text: "Create Invoice",
+    text: "إنشاء فاتورة",
     href: "/createinvoice",
   },
   {
-    text: "Invoices",
-    href: "/invoices",
-  },
+    text: "الموظفين",
+    href: "/users",
+  }
 ];
 
 export default function Header() {
-  const [user, setUser] = useState({})
-  const [logged] = useAuth();  // Assuming `useAuth` returns logged status
+  const [user, setUser] = useState({});
+  const [logged] = useAuth();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -51,7 +50,9 @@ export default function Header() {
           });
 
           if (!response.ok) {
-            throw new Error(`Failed to fetch user data: ${response.statusText}`);
+            throw new Error(
+              `Failed to fetch user data: ${response.statusText}`
+            );
           }
 
           const data = await response.json();
@@ -64,10 +65,7 @@ export default function Header() {
     };
 
     fetchUserData();
-  }, [logged]);  // Add `logged` as a dependency to re-fetch when login status changes
-
-
-
+  }, [logged]);
 
   const [selectedLink, setSelectedLink] = useState("/users"); // لإدارة الرابط المختار
   const handleLinkClick = (href) => {
@@ -158,6 +156,7 @@ export default function Header() {
             backgroundColor: "#f7f7f7",
             height: "100vh",
             padding: 2,
+            direction: "rtl",
           }}
           role="presentation"
           onClick={toggleDrawer(false)}
@@ -167,6 +166,7 @@ export default function Header() {
             sx={{
               display: "flex",
               flexDirection: "column",
+              justifyContent: "center",
             }}
           >
             {/* User Information */}
@@ -181,16 +181,22 @@ export default function Header() {
                   cursor: "context-menu",
                   display: "flex",
                   gap: 1,
+                  textAlign: "right",
+                  fontSize: "1.5rem",
                 }}
               >
-                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                  Name:
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: "bold", fontSize: "1.5rem" }}
+                >
+                  الاسم:
                 </Typography>
                 <ListItemText
-                  primary={user.username}
-                  sx={{
-                    color: "#555",
-                  }}
+                  primary={
+                    <Typography sx={{ color: "#555", fontSize: "1.5rem" }}>
+                      {user.username}
+                    </Typography>
+                  }
                 />
               </ListItemButton>
             </ListItem>
@@ -205,16 +211,20 @@ export default function Header() {
                   cursor: "context-menu",
                   display: "flex",
                   gap: 1,
+                  textAlign: "right",
+                  fontSize: "1.5rem",
                 }}
               >
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                  Role:
+                  الوظيقة:
                 </Typography>
+
                 <ListItemText
-                  primary={user.job_name}
-                  sx={{
-                    color: "#555",
-                  }}
+                  primary={
+                    <Typography sx={{ color: "#555", fontSize: "1.5rem" }}>
+                      {user.job_name}
+                    </Typography>
+                  }
                 />
               </ListItemButton>
             </ListItem>
@@ -242,7 +252,7 @@ export default function Header() {
                     },
                   }}
                 >
-                  Logout
+                  تسجيل الخروج
                 </Button>
               </ListItemButton>
             </ListItem>

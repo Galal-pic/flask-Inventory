@@ -12,6 +12,7 @@ import {
   Button,
   Select,
   MenuItem,
+  PaginationItem,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import ClearOutlinedIcon from "@mui/icons-material/ClearOutlined";
@@ -19,7 +20,10 @@ import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
 import GroupAddIcon from "@mui/icons-material/GroupAdd";
-
+import Pagination from "@mui/material/Pagination";
+import Stack from "@mui/material/Stack";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 function CustomToolbar() {
   const navigate = useNavigate();
 
@@ -44,20 +48,21 @@ function CustomToolbar() {
             color: "#fff",
             borderColor: "#1976d2",
           },
-          "&:active": {
-            backgroundColor: "#1565c0",
-            borderColor: "#1565c0",
-          },
         }}
         color="primary"
-        startIcon={<GroupAddIcon />}
         onClick={handleClick}
       >
-        Add User
+        إضافة موظف
+        <GroupAddIcon
+          sx={{
+            marginRight: "8px",
+          }}
+        />
       </Button>
 
       <GridToolbarQuickFilter
         sx={{
+          direction: "rtl",
           width: "35%",
           "& .MuiInputBase-root": {
             borderRadius: "8px",
@@ -71,15 +76,43 @@ function CustomToolbar() {
           "& .MuiSvgIcon-root": {
             color: "#1976d2",
             fontSize: "1.5rem",
-            marginRight: "8px",
+            marginLeft: "8px",
           },
           overflow: "hidden",
         }}
+        placeholder="ابحث هنا..."
       />
     </GridToolbarContainer>
   );
 }
 
+const CustomPagination = ({ page, count, onChange }) => {
+  const handlePageChange = (event, value) => {
+    onChange({ page: value - 1 });
+  };
+
+  return (
+    <Stack
+      spacing={2}
+      sx={{
+        margin: "auto",
+        direction: "rtl",
+      }}
+    >
+      <Pagination
+        count={count}
+        page={page + 1}
+        onChange={handlePageChange}
+        renderItem={(item) => (
+          <PaginationItem
+            slots={{ previous: ArrowForwardIcon, next: ArrowBackIcon }}
+            {...item}
+          />
+        )}
+      />
+    </Stack>
+  );
+};
 export default function Users() {
   const API_BASE_URL = "http://127.0.0.1:5000/auth";
   const [users, setUsers] = useState([]);
@@ -87,6 +120,16 @@ export default function Users() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackBarType, setSnackBarType] = useState("");
+
+  // pagination
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 10,
+  });
+  const pageCount = Math.ceil(users.length / paginationModel.pageSize);
+  const handlePageChange = (newModel) => {
+    setPaginationModel((prev) => ({ ...prev, ...newModel }));
+  };
 
   // Fetch data from API
   const fetchData = async (url, method = "GET", body = null) => {
@@ -107,22 +150,22 @@ export default function Users() {
     }
   };
 
+  // Edit
   const handleEditClick = (id) => {
     const row = users.find((row) => row.id === id);
     setEditedRow({ ...row });
   };
-
   const validatePhone = (phone) => {
     const phoneRegex = /^[0-9]{10,15}$/;
     return phoneRegex.test(phone);
   };
 
   const validateFields = (row) => {
-    if (!row.username) return "Username is required";
-    if (!row.job_name) return "Job name is required";
-    if (!row.phone_number) return "Phone number is required";
-    if (!validatePhone(row.phone_number)) return "Invalid phone number";
-    return null; // يعني أن التحقق نجح
+    if (!row.username) return "اسم المستخدم مطلوب";
+    if (!row.job_name) return "اسم الوظيفة مطلوب";
+    if (!row.phone_number) return "رقم الهاتف مطلوب";
+    if (!validatePhone(row.phone_number)) return "رقم الهاتف غير صالح";
+    return null;
   };
 
   const handleSave = async (id) => {
@@ -160,26 +203,25 @@ export default function Users() {
       }
 
       setOpenSnackbar(true);
-      setSnackbarMessage("User updated successfully");
+      setSnackbarMessage("تم تحديث بيانات الموظف بنجاح");
       setSnackBarType("success");
     } catch (error) {
       console.error("Error updating user:", error);
       setOpenSnackbar(true);
-      setSnackbarMessage("Error updating user");
+      setSnackbarMessage("خطأ في تحديث بيانات الموظف");
       setSnackBarType("error");
     }
 
     setEditedRow(null);
   };
 
+  // Delete
   const handleDelete = async (id) => {
     const isConfirmed = window.confirm(
       "Are you sure you want to delete this user?"
     );
     if (!isConfirmed) return;
-
     const accessToken = localStorage.getItem("access_token");
-
     try {
       const response = await fetch(`${API_BASE_URL}/user/${id}`, {
         method: "DELETE",
@@ -194,13 +236,13 @@ export default function Users() {
       }
 
       setOpenSnackbar(true);
-      setSnackbarMessage("User deleted successfully");
+      setSnackbarMessage("تم حذف الموظف بنجاح");
       setSnackBarType("success");
       setUsers((prevRows) => prevRows.filter((row) => row.id !== id));
     } catch (error) {
       console.error("Error deleting user:", error);
       setOpenSnackbar(true);
-      setSnackbarMessage(error.message || "Error deleting user");
+      setSnackbarMessage("خطأ في حذف الموظف");
       setSnackBarType("error");
     }
   };
@@ -212,14 +254,9 @@ export default function Users() {
       width: 100,
       sortable: false,
     },
-    // {
-    //   field: "id",
-    //   headerName: "#",
-    //   width: 100,
-    // },
     {
       field: "username",
-      headerName: "Name",
+      headerName: "الاسم",
       flex: 1,
       renderCell: (params) => {
         if (editedRow && editedRow.id === params.id) {
@@ -238,7 +275,7 @@ export default function Users() {
     },
     {
       field: "job_name",
-      headerName: "Role",
+      headerName: "الوظيفة",
       flex: 1,
       renderCell: (params) => {
         if (editedRow && editedRow.id === params.id) {
@@ -249,8 +286,8 @@ export default function Users() {
                 setEditedRow({ ...editedRow, job_name: e.target.value })
               }
             >
-              <MenuItem value="Developer">Developer</MenuItem>
-              <MenuItem value="Manager">Manager</MenuItem>
+              <MenuItem value="مبرمج">مبرمج</MenuItem>
+              <MenuItem value="مدير">مدير</MenuItem>
             </Select>
           );
         }
@@ -259,7 +296,7 @@ export default function Users() {
     },
     {
       field: "phone_number",
-      headerName: "Phone",
+      headerName: "رقم الهاتف",
       flex: 1,
       renderCell: (params) => {
         if (editedRow && editedRow.id === params.id) {
@@ -278,7 +315,7 @@ export default function Users() {
     },
     {
       field: "actions",
-      headerName: "Actions",
+      headerName: "الإجراءات",
       width: 150,
       headerClassName: styles.actionsColumn,
       cellClassName: styles.actionsColumn,
@@ -333,6 +370,7 @@ export default function Users() {
     },
   ];
 
+  // fetch employees
   useEffect(() => {
     const fetchUserData = async () => {
       const accessToken = localStorage.getItem("access_token");
@@ -353,9 +391,83 @@ export default function Users() {
     fetchUserData();
   }, [users]);
 
+  const localeText = {
+    toolbarColumns: "الأعمدة",
+    toolbarFilters: "التصفية",
+    toolbarDensity: "الكثافة",
+    toolbarExport: "تصدير",
+    columnMenuSortAsc: "ترتيب تصاعدي",
+    columnMenuSortDesc: "ترتيب تنازلي",
+    columnMenuFilter: "تصفية",
+    columnMenuHideColumn: "إخفاء العمود",
+    columnMenuUnsort: "إلغاء الترتيب",
+    filterPanelOperator: "الشرط",
+    filterPanelValue: "القيمة",
+    filterOperatorContains: "يحتوي على",
+    filterOperatorEquals: "يساوي",
+    filterOperatorStartsWith: "يبدأ بـ",
+    filterOperatorEndsWith: "ينتهي بـ",
+    filterOperatorIsEmpty: "فارغ",
+    filterOperatorIsNotEmpty: "غير فارغ",
+    columnMenuManageColumns: "إدارة الأعمدة",
+    columnMenuShowColumns: "إظهار الأعمدة",
+    toolbarDensityCompact: "مضغوط",
+    toolbarDensityStandard: "عادي",
+    toolbarDensityComfortable: "مريح",
+    toolbarExportCSV: "تصدير إلى CSV",
+    toolbarExportPrint: "طباعة",
+    noRowsLabel: "لا توجد بيانات",
+    noResultsOverlayLabel: "لا توجد نتائج",
+    columnMenuShowHideAllColumns: "إظهار/إخفاء الكل",
+    columnMenuResetColumns: "إعادة تعيين الأعمدة",
+    filterOperatorDoesNotContain: "لا يحتوي على",
+    filterOperatorDoesNotEqual: "لا يساوي",
+    filterOperatorIsAnyOf: "أي من",
+    filterPanelColumns: "الأعمدة",
+    filterPanelInputPlaceholder: "أدخل القيمة",
+    filterPanelInputLabel: "قيمة التصفية",
+    filterOperatorIs: "هو",
+    filterOperatorIsNot: "ليس",
+    toolbarExportExcel: "تصدير إلى Excel",
+    errorOverlayDefaultLabel: "حدث خطأ.",
+    footerRowSelected: (count) => `${count} صفوف محددة`,
+    footerTotalRows: "إجمالي الصفوف:",
+    footerTotalVisibleRows: (visibleCount, totalCount) =>
+      `${visibleCount} من ${totalCount}`,
+    filterPanelDeleteIconLabel: "حذف",
+    filterPanelAddFilter: "إضافة تصفية",
+    filterPanelDeleteFilter: "حذف التصفية",
+    loadingOverlay: "جارٍ التحميل...",
+    columnMenuReset: "إعادة تعيين",
+    footerPaginationRowsPerPage: "عدد الصفوف في الصفحة:",
+    paginationLabelDisplayedRows: ({ from, to, count }) =>
+      `${from} - ${to} من ${count}`,
+
+    filterOperatorIsAny: "أي",
+    filterOperatorIsTrue: "نعم",
+    filterOperatorIsFalse: "لا",
+    filterValueAny: "أي",
+    filterValueTrue: "نعم",
+    filterValueFalse: "لا",
+    toolbarColumnsLabel: "إدارة الأعمدة",
+    toolbarResetColumns: "إعادة تعيين",
+  };
+
+  useEffect(() => {
+    const handleWheel = (event) => {
+      event.stopPropagation();
+    };
+    document.addEventListener("wheel", handleWheel);
+
+    return () => {
+      document.removeEventListener("wheel", handleWheel);
+    };
+  }, []);
+
   return (
     <div className={styles.container}>
-      <h1 className={styles.head}>Employee Management</h1>
+      <h1 className={styles.head}>بيانات الموظفين</h1>
+
       <DataGrid
         rows={users}
         columns={columns.map((col) => ({
@@ -364,14 +476,28 @@ export default function Users() {
           headerAlign: "center",
           headerClassName: styles.headerCell,
         }))}
+        localeText={localeText} // تمرير النصوص المترجمة هنا
         rowHeight={62}
         editMode="row"
+        // hideFooter={true}
         onCellDoubleClick={(params, event) => {
           event.stopPropagation();
         }}
         slots={{
           toolbar: CustomToolbar,
+          pagination: CustomPagination,
         }}
+        slotProps={{
+          pagination: {
+            page: paginationModel.page,
+            count: pageCount,
+            onChange: handlePageChange,
+          },
+        }}
+        pagination
+        paginationModel={paginationModel}
+        onPaginationModelChange={handlePageChange}
+        disableVirtualization={false} // تأكد من أن هذه الخاصية غير معطلة
         sx={{
           "& .MuiDataGrid-toolbarContainer": {
             paddingBottom: "10px",
@@ -380,7 +506,6 @@ export default function Users() {
             backgroundColor: "#f7f7f7",
           },
           "& .MuiDataGrid-virtualScroller": {
-            border: "1px solid #ddd",
             borderRadius: "4px",
           },
           "& .MuiDataGrid-cell": {
@@ -398,8 +523,8 @@ export default function Users() {
           },
           backgroundColor: "white",
           border: "none",
+          direction: "rtl",
         }}
-        hideFooter={true}
       />
 
       <Snackbar

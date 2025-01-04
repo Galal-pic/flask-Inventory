@@ -17,12 +17,11 @@ import {
 import ClearIcon from "@mui/icons-material/Clear";
 import AddIcon from "@mui/icons-material/Add";
 import logo from "./logo.png";
+import styles from "./CreateInvoice.module.css";
 
 export default function Type1() {
-  const [user, setUser] = useState({});
-  const rowRefs = useRef([]);
-
   // getUserName
+  const [user, setUser] = useState({});
   useEffect(() => {
     const fetchUserData = async () => {
       const accessToken = localStorage.getItem("access_token");
@@ -49,17 +48,51 @@ export default function Type1() {
     fetchUserData();
   }, []);
 
+  // Get Last ID
+  const [voucherNumber, setVoucherNumber] = useState(null);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const accessToken = localStorage.getItem("access_token");
+      if (!accessToken) {
+        console.error("No access token found.");
+        return;
+      }
+      try {
+        const response = await fetch("http://127.0.0.1:5000/invoices/last-id", {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch user data: ${response.statusText}`);
+        }
+        const id = await response.json();
+        setVoucherNumber(id);
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+      }
+    };
+    fetchUserData();
+  }, [voucherNumber]);
+  const operationTypes = ["صرف", "أمانات", "مرتجع", "توالف", "حجز"];
+  const [operationType, setOperationType] = useState("");
+
+  const purchasesTypes = ["إضافة"];
+  const [purchasesType, setPurchasesType] = useState("");
+
   const [rows, setRows] = useState([
     {
       counter: 1,
       itemsBar: "",
       itemName: "",
-      quantity: "",
-      price: "",
+      quantity: 0,
+      ...(purchasesType && { price: 0 }),
       description: "",
-      total: 0,
+      ...(purchasesType && { total: 0 }),
     },
   ]);
+  const rowRefs = useRef([]);
   const [machineName, setMachineName] = useState("");
   const [machineInfo, setMachineInfo] = useState("");
   const [mechanismName, setMechanismName] = useState("");
@@ -75,16 +108,6 @@ export default function Type1() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackBarType, setSnackBarType] = useState("");
 
-  const operationTypes = [
-    "إضافة/Add",
-    "صرف/Withdraw",
-    "أمانات/Deposits",
-    "مرتجع/Return",
-    "توالف/Scrap",
-    "حجز/Reservation",
-    "رصيد افتتاحي/Opening Balance",
-  ];
-  const [operationType, setOperationType] = useState(operationTypes[0]);
   const handleAddComment = () => {
     setShowCommentField(true);
   };
@@ -224,9 +247,10 @@ export default function Type1() {
         counter: prevRows.length + 1,
         itemsBar: "",
         itemName: "",
-        quantity: "",
-        price: "",
+        quantity: 0,
+        ...(purchasesType && { price: 0 }),
         description: "",
+        ...(purchasesType && { total: 0 }),
       },
     ]);
   };
@@ -338,28 +362,19 @@ export default function Type1() {
       (row) => row.itemName.trim() !== "" && parseFloat(row.total) > 0
     );
     setItems(
-      // filteredItems.map((row) => ({
-      //   ...row,
-      //   total: row.total,
-      // }))
-      rows
+      filteredItems.map((row) => ({
+        ...row,
+        total: row.total,
+      }))
     );
   }, [rows]);
 
   const handleSave = async () => {
     // Validate that at least one item is entered
     if (items.length === 0) {
+      console.log(items);
       setOpenSnackbar(true);
-      setSnackbarMessage("Please add at least one item");
-      setSnackBarType("error");
-      return;
-    }
-
-    // Validate that each item has a non-empty name
-    const isValid = items.every((item) => item.itemName.trim() !== "");
-    if (!isValid) {
-      setOpenSnackbar(true);
-      setSnackbarMessage("You must add at least one item !");
+      setSnackbarMessage("يرجى إضافة عنصر واحد على الأقل");
       setSnackBarType("error");
       return;
     }
@@ -379,19 +394,12 @@ export default function Type1() {
         quantity: item.quantity ? parseFloat(item.quantity) : 0,
         price: item.price ? parseFloat(item.price) : 0,
         total_price: item.totalPrice ? parseFloat(item.totalPrice) : 0,
-        description: item.description
+        description: item.description,
       })),
     };
 
     try {
       const accessToken = localStorage.getItem("access_token");
-      if (!accessToken) {
-        console.log(accessToken);
-        setOpenSnackbar(true);
-        setSnackbarMessage("You are not logged in. Please log in to continue.");
-        setSnackBarType("error");
-        return;
-      }
 
       const response = await fetch("http://127.0.0.1:5000/invoices/", {
         method: "POST",
@@ -408,577 +416,444 @@ export default function Type1() {
       }
 
       setOpenSnackbar(true);
-      setSnackbarMessage("Invoice created successfully");
+      setSnackbarMessage("تم إنشاء الفاتورة بنجاح");
       setSnackBarType("success");
+      setRows([
+        {
+          counter: 1,
+          itemsBar: "",
+          itemName: "",
+          quantity: 0,
+          ...(purchasesType && { price: 0 }),
+          description: "",
+          ...(purchasesType && { total: 0 }),
+        },
+      ]);
+      setMachineName("");
+      setMachineInfo("");
+      setMechanismName("");
+      setMechanismInfo("");
+      setClientName("");
+      setWarehouseManager("");
+      handleCancelComment();
     } catch (error) {
       console.error("Error creating invoice:", error);
       setOpenSnackbar(true);
-      setSnackbarMessage(error.message || "Error creating invoice");
+      setSnackbarMessage(error.message || "خطأ في إنشاء الفاتورة");
       setSnackBarType("error");
     }
   };
 
-  return (
-    <Box sx={{ padding: 4, width: "90%", margin: "auto", marginTop: "100px" }}>
-      {/* Operation Type Selection */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          marginBottom: "20px",
-        }}
-      >
-        <label
-          style={{
-            marginBottom: "20px",
-            fontSize: "1.4rem",
-            color: "#1976d2",
-            fontWeight: "bold",
-          }}
-        >
-          نوع العملية / Operation Type
-        </label>
-        <FormControl
-          sx={{
-            m: 1,
-            width: "250px",
-            margin: "auto",
-            border: "2px solid #1976d2",
-            borderRadius: "6px",
-            backgroundColor: "white",
-          }}
-        >
-          <Select
-            value={operationType}
-            onChange={(e) => setOperationType(e.target.value)}
-            displayEmpty
-            sx={{ fontWeight: "bold", fontSize: "20px" }}
-            inputProps={{ "aria-label": "نوع العملية / Operation Type" }}
-          >
-            {operationTypes.map((type, index) => (
-              <MenuItem key={index} value={type}>
-                {type}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </div>
+  const [lastSelected, setLastSelected] = useState(""); // لتتبع آخر اختيار
 
+  useEffect(() => {
+    if (operationType !== "") {
+      setLastSelected(operationType);
+      setPurchasesType("");
+    }
+  }, [operationType]);
+
+  useEffect(() => {
+    if (purchasesType !== "") {
+      setLastSelected(purchasesType);
+      setOperationType("");
+    }
+  }, [purchasesType]);
+
+  return (
+    <Box className={styles.mainBox}>
+      {/* Operation Type Selection */}
       <Box
         sx={{
-          direction: "rtl",
-          borderRadius: "8px",
-          width: "100%",
-          margin: "auto",
+          display: "flex",
+          justifyContent: "center",
+          gap: 10,
         }}
       >
-        <Box
-          className="printable-box"
-          sx={{
-            border: "1px solid #ddd",
-            padding: "10px 35px",
-            overflowY: "auto",
-          }}
-        >
-          {/* Header Section */}
-          <Box sx={{ display: "flex", alignItems: "center", marginBottom: 3 }}>
-            <Box>
-              <img
-                src={logo}
-                alt="Logo"
-                style={{ width: "300px", height: "" }}
-              />
-            </Box>
-            <Box sx={{ textAlign: "center", flex: 1, lineHeight: "2.4" }}>
-              <Box
-                className="operationType"
-                sx={{ fontWeight: "bold", color: "#333", fontSize: "1.4rem" }}
-              >
-                نوع العملية/ Operation type
-              </Box>
-              <Box sx={{ fontSize: "20px", color: "#555", fontWeight: "bold" }}>
-                {operationType}
-              </Box>
-            </Box>
-            <Box className="text" sx={{ textAlign: "right" }}>
-              <Box
-                sx={{
-                  fontWeight: "bold",
-                  color: "#555",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <Box>رقم السند / Voucher Number:</Box>
-                <Box sx={{ marginLeft: 1, marginRight: "5px" }}>
-                  <span style={{ fontWeight: "400", color: "#999090" }}>1</span>
-                </Box>
-              </Box>
-              <Box
-                sx={{
-                  fontWeight: "bold",
-                  color: "#555",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <Box>التاريخ / Date:</Box>
-                <Box sx={{ marginLeft: 1, marginRight: "5px" }}>
-                  <span style={{ fontWeight: "400", color: "#999090" }}>
-                    {date}
-                  </span>
-                </Box>
-              </Box>
-              <Box
-                sx={{
-                  fontWeight: "bold",
-                  color: "#555",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                <Box>الوقت / Time:</Box>
-                <Box sx={{ marginLeft: 1, marginRight: "5px" }}>
-                  <span style={{ fontWeight: "400", color: "#999090" }}>
-                    {time}
-                  </span>
-                </Box>
-              </Box>
-            </Box>
-          </Box>
-
-          <Box>
-            {/* Table Section */}
-            <Table
-              sx={{
-                border: "1px solid #b2b0b0",
-                marginBottom: 3,
-                "& .MuiTableCell-root": {
-                  border: "1px solid #b2b0b0",
-                  padding: "12px",
-                  textAlign: "center",
-                },
-                backgroundColor: "white",
-              }}
+        <div className={styles.operationTypeSelection}>
+          <label className={styles.operationTypeLabel}>مشتريات</label>
+          <FormControl className={styles.operationTypeFormControl}>
+            <Select
+              className={styles.operationTypeSelect}
+              value={purchasesType}
+              onChange={(e) => setPurchasesType(e.target.value)}
+              displayEmpty
             >
-              <TableBody>
-                {/* Inputs for Machine and Mechanism Names */}
-                <TableRow>
-                  <TableCell
-                    colSpan={2}
-                    sx={{
-                      fontWeight: "bold",
-                      width: "110px",
-                      textAlign: "right",
-                      backgroundColor: "#ddd",
-                    }}
-                  >
-                    اسم الماكينة / Machine Name
-                  </TableCell>
-                  <TableCell colSpan={1}>
-                    <input
-                      type="text"
-                      value={machineName}
-                      onChange={(e) => setMachineName(e.target.value)}
-                      style={{ border: "none", outline: "none", width: "100%" }}
-                    />
-                  </TableCell>
-                  <TableCell colSpan={4}>
-                    <input
-                      type="text"
-                      value={machineInfo}
-                      onChange={(e) => setMachineInfo(e.target.value)}
-                      style={{ border: "none", outline: "none", width: "100%" }}
-                    />
-                  </TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell
-                    colSpan={2}
-                    sx={{
-                      fontWeight: "bold",
-                      width: "110px",
-                      textAlign: "right",
-                      backgroundColor: "#ddd",
-                    }}
-                  >
-                    اسم الميكانيزم / Mechanism Name
-                  </TableCell>
-                  <TableCell colSpan={1}>
-                    <input
-                      type="text"
-                      value={mechanismName}
-                      onChange={(e) => setMechanismName(e.target.value)}
-                      style={{ border: "none", outline: "none", width: "100%" }}
-                    />
-                  </TableCell>
-                  <TableCell colSpan={4}>
-                    <input
-                      type="text"
-                      value={mechanismInfo}
-                      onChange={(e) => setMechanismInfo(e.target.value)}
-                      style={{ border: "none", outline: "none", width: "100%" }}
-                    />
-                  </TableCell>
-                </TableRow>
-                {/* Headers for Items */}
-                <TableRow
+              {purchasesTypes.map((type, index) => (
+                <MenuItem
                   sx={{
-                    "& .MuiTableCell-root": { border: "none" },
-                    backgroundColor: "#ddd",
+                    direction: "rtl",
                   }}
+                  key={index}
+                  value={type}
                 >
-                  <TableCell sx={{ fontWeight: "bold", width: "auto" }}>
-                    <AddIcon
-                      onClick={addRow}
-                      sx={{
-                        cursor: "pointer",
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", width: "auto" }}>
-                    اسم الصنف / Item Name
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", width: "auto" }}>
-                    الرمز / Barcode
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", width: "auto" }}>
-                    الكمية / Quantity
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", width: "auto" }}>
-                    السعر / Price
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", width: "auto" }}>
-                    إجمالى السعر / Total Price
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold", width: "auto" }}>
-                    بيان / Description
-                  </TableCell>
-                </TableRow>
-                {/* Rows for Data */}
-                {rows.map((row, index) => (
-                  <TableRow key={index}>
-                    <TableCell
-                      sx={{
-                        width: "auto",
-                        textAlign: "center",
-                        position: "relative",
-                      }}
-                    >
-                      {row.counter}
-                      <IconButton
-                        variant="contained"
-                        color="error"
-                        onClick={() => removeRow(index)}
-                        sx={{
-                          padding: "4px 8px",
-                          borderRadius: "4px",
-                          display: "flex",
-                          alignItems: "center",
-                          position: "absolute",
-                          right: "-35px",
-                          top: "50%",
-                          transform: "translateY(-50%)",
-                        }}
-                      >
-                        <ClearIcon fontSize="small" />
-                      </IconButton>
+                  {type}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
+        <div className={styles.operationTypeSelection}>
+          <label className={styles.operationTypeLabel}>عمليات</label>
+          <FormControl className={styles.operationTypeFormControl}>
+            <Select
+              className={styles.operationTypeSelect}
+              value={operationType}
+              onChange={(e) => setOperationType(e.target.value)}
+              displayEmpty
+            >
+              {operationTypes.map((type, index) => (
+                <MenuItem
+                  sx={{
+                    direction: "rtl",
+                  }}
+                  key={index}
+                  value={type}
+                >
+                  {type}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </div>
+      </Box>
+
+      {operationType === "" && purchasesType === "" ? (
+        <div>برجاء تحديد نوع الفاتورة</div>
+      ) : (
+        <Box className={styles.outerBox}>
+          <Box className={`printable-box ${styles.printableBox}`}>
+            {/* Header Section */}
+            <Box className={styles.headerSection}>
+              <Box className={styles.logoBox}>
+                <img src={logo} alt="Logo" className={styles.logoImage} />
+              </Box>
+              <Box className={styles.operationTypeBox}>
+                <Box className={styles.operationTypeText}>نوع العملية</Box>
+                <Box className={styles.operationTypeName}>{lastSelected}</Box>
+              </Box>
+              <Box className={styles.infoBox}>
+                <Box className={styles.infoItem}>
+                  <Box className={styles.infoLabel}>رقم السند:</Box>
+                  <Box className={styles.infoValue}>
+                    {voucherNumber && voucherNumber.last_id}
+                  </Box>
+                </Box>
+                <Box className={styles.infoItem}>
+                  <Box className={styles.infoLabel}>التاريخ</Box>
+                  <Box className={styles.infoValue}>{date}</Box>
+                </Box>
+                <Box className={styles.infoItem}>
+                  <Box className={styles.infoLabel}>الوقت</Box>
+                  <Box className={styles.infoValue}>{time}</Box>
+                </Box>
+              </Box>
+            </Box>
+
+            {/* Table Section */}
+            <Box className={styles.tableSection}>
+              <Table
+                className={styles.customTable}
+                sx={{
+                  "& .MuiTableCell-root": {
+                    border: "1px solid #b2b0b0",
+                    padding: "12px",
+                    textAlign: "center",
+                  },
+                }}
+              >
+                <TableBody>
+                  {/* Inputs for Machine and Mechanism Names */}
+                  <TableRow className={styles.tableRow}>
+                    <TableCell className={styles.tableCell} colSpan={2}>
+                      اسم الماكينة
                     </TableCell>
-                    <TableCell sx={{ width: "auto", textAlign: "center" }}>
+                    <TableCell className={styles.tableInputCell} colSpan={1}>
                       <input
                         type="text"
-                        value={row.itemName}
-                        onChange={(e) =>
-                          handleInputChange(index, "itemName", e.target.value)
-                        }
-                        style={{ border: "none", outline: "none" }}
-                        ref={rowRefs.current[index]?.[0]}
-                        onKeyDown={(e) => handleKeyDown(e, index, 0)}
+                        value={machineName}
+                        onChange={(e) => setMachineName(e.target.value)}
+                        className={styles.cellInput}
                       />
                     </TableCell>
-                    <TableCell sx={{ width: "auto", textAlign: "center" }}>
+                    <TableCell className={styles.tableInputCell} colSpan={4}>
                       <input
                         type="text"
-                        value={row.itemsBar}
-                        onChange={(e) =>
-                          handleInputChange(index, "itemsBar", e.target.value)
-                        }
-                        style={{ border: "none", outline: "none" }}
-                        ref={rowRefs.current[index]?.[1]}
-                        onKeyDown={(e) => handleKeyDown(e, index, 1)}
-                      />
-                    </TableCell>
-                    <TableCell sx={{ width: "auto", textAlign: "center" }}>
-                      <input
-                        type="number"
-                        value={row.quantity}
-                        onChange={(e) =>
-                          handleInputChange(index, "quantity", e.target.value)
-                        }
-                        style={{ border: "none", outline: "none" }}
-                        ref={rowRefs.current[index]?.[2]}
-                        onKeyDown={(e) => handleKeyDown(e, index, 2)}
-                      />
-                    </TableCell>
-                    <TableCell sx={{ width: "auto", textAlign: "center" }}>
-                      <input
-                        type="number"
-                        value={row.price}
-                        onChange={(e) =>
-                          handleInputChange(index, "price", e.target.value)
-                        }
-                        style={{ border: "none", outline: "none" }}
-                        ref={rowRefs.current[index]?.[3]}
-                        onKeyDown={(e) => handleKeyDown(e, index, 3)}
-                      />
-                    </TableCell>
-                    <TableCell sx={{ width: "auto", textAlign: "center" }}>
-                      {row.quantity && row.price
-                        ? (row.quantity * row.price).toFixed(2)
-                        : "0"}
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        width: "auto",
-                        textAlign: "center",
-                      }}
-                    >
-                      <input
-                        type="text"
-                        value={row.description}
-                        onChange={(e) =>
-                          handleInputChange(
-                            index,
-                            "description",
-                            e.target.value
-                          )
-                        }
-                        style={{ border: "none", outline: "none" }}
-                        ref={rowRefs.current[index]?.[4]}
-                        onKeyDown={(e) => handleKeyDown(e, index, 4)}
+                        value={machineInfo}
+                        onChange={(e) => setMachineInfo(e.target.value)}
+                        className={styles.cellInput}
                       />
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                  <TableRow className={styles.tableRow}>
+                    <TableCell className={styles.tableCell} colSpan={2}>
+                      اسم الميكانيزم
+                    </TableCell>
+                    <TableCell className={styles.tableInputCell} colSpan={1}>
+                      <input
+                        type="text"
+                        value={mechanismName}
+                        onChange={(e) => setMechanismName(e.target.value)}
+                        className={styles.cellInput}
+                      />
+                    </TableCell>
+                    <TableCell className={styles.tableInputCell} colSpan={4}>
+                      <input
+                        type="text"
+                        value={mechanismInfo}
+                        onChange={(e) => setMechanismInfo(e.target.value)}
+                        className={styles.cellInput}
+                      />
+                    </TableCell>
+                  </TableRow>
+                  {/* Headers for Items */}
+                  <TableRow>
+                    <TableCell className={styles.tableCell}>
+                      <AddIcon onClick={addRow} className={styles.addIcon} />
+                    </TableCell>
+                    <TableCell className={styles.tableCell}>
+                      اسم الصنف
+                    </TableCell>
+                    <TableCell className={styles.tableCell}>الرمز</TableCell>
+                    <TableCell className={styles.tableCell}>الكمية</TableCell>
+                    {purchasesType && (
+                      <>
+                        <TableCell className={styles.tableCell}>
+                          السعر
+                        </TableCell>
+                        <TableCell className={styles.tableCell}>
+                          إجمالي السعر
+                        </TableCell>
+                      </>
+                    )}
+                    <TableCell
+                      colSpan={purchasesType ? 1 : 2}
+                      className={styles.tableCell}
+                    >
+                      بيان
+                    </TableCell>
+                  </TableRow>
+                  {/* Rows for Data */}
+                  {rows.map((row, index) => (
+                    <TableRow key={index}>
+                      <TableCell
+                        sx={{
+                          position: "relative",
+                        }}
+                        className={styles.tableCellRow}
+                      >
+                        {row.counter}
+                        <IconButton
+                          variant="contained"
+                          color="error"
+                          onClick={() => removeRow(index)}
+                          className={styles.clearIcon}
+                        >
+                          <ClearIcon fontSize="small" />
+                        </IconButton>
+                      </TableCell>
+
+                      <TableCell className={styles.tableCellRow}>
+                        <input
+                          type="text"
+                          value={row.itemName}
+                          onChange={(e) =>
+                            handleInputChange(index, "itemName", e.target.value)
+                          }
+                          className={styles.cellInput}
+                          ref={rowRefs.current[index]?.[0]}
+                          onKeyDown={(e) => handleKeyDown(e, index, 0)}
+                        />
+                      </TableCell>
+                      <TableCell className={styles.tableCellRow}>
+                        <input
+                          type="text"
+                          value={row.itemsBar}
+                          onChange={(e) =>
+                            handleInputChange(index, "itemsBar", e.target.value)
+                          }
+                          className={styles.cellInput}
+                          ref={rowRefs.current[index]?.[1]}
+                          onKeyDown={(e) => handleKeyDown(e, index, 1)}
+                        />
+                      </TableCell>
+                      <TableCell className={styles.tableCellRow}>
+                        <input
+                          type="number"
+                          value={row.quantity}
+                          onChange={(e) =>
+                            handleInputChange(index, "quantity", e.target.value)
+                          }
+                          className={styles.cellInput}
+                          ref={rowRefs.current[index]?.[2]}
+                          onKeyDown={(e) => handleKeyDown(e, index, 2)}
+                        />
+                      </TableCell>
+
+                      {purchasesType && (
+                        <>
+                          <TableCell className={styles.tableCellRow}>
+                            <input
+                              type="number"
+                              value={row.price}
+                              onChange={(e) =>
+                                handleInputChange(
+                                  index,
+                                  "price",
+                                  e.target.value
+                                )
+                              }
+                              className={styles.cellInput}
+                              ref={rowRefs.current[index]?.[3]}
+                              onKeyDown={(e) => handleKeyDown(e, index, 3)}
+                            />
+                          </TableCell>
+                          <TableCell className={styles.tableCellRow}>
+                            {row.quantity && row.price
+                              ? (row.quantity * row.price).toFixed(2)
+                              : "0"}
+                          </TableCell>
+                        </>
+                      )}
+                      <TableCell
+                        colSpan={purchasesType ? 1 : 2}
+                        className={styles.tableCellRow}
+                      >
+                        <input
+                          type="text"
+                          value={row.description}
+                          onChange={(e) =>
+                            handleInputChange(
+                              index,
+                              "description",
+                              e.target.value
+                            )
+                          }
+                          className={styles.cellInput}
+                          ref={rowRefs.current[index]?.[4]}
+                          onKeyDown={(e) => handleKeyDown(e, index, 4)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+
+            {/* Total Amount Section */}
+            {purchasesType && (
+              <Box className={styles.totalAmountSection}>
+                <Box className={styles.totalAmountBox}>
+                  <Box className={styles.totalAmountLabel}>الإجمالي:</Box>
+                  <Box className={styles.totalAmountValue}>{totalAmount}</Box>
+                </Box>
+              </Box>
+            )}
+
+            {/* Comment Field */}
+            {showCommentField && (
+              <Box className={styles.commentFieldBox}>
+                <TextField
+                  multiline
+                  rows={2}
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  variant="outlined"
+                  fullWidth
+                  className={styles.commentTextField}
+                  sx={{
+                    "& .MuiOutlinedInput-input": {
+                      textAlign: "center",
+                    },
+                  }}
+                />
+              </Box>
+            )}
+
+            {/* Information Section */}
+            <Box className={styles.infoSection}>
+              <Box className={styles.infoItemBox}>
+                <Box className={styles.infoLabel}>اسم الموظف</Box>
+                <Box className={styles.infoValue}>{user.username}</Box>
+              </Box>
+              <Box className={styles.infoItemBox}>
+                <Box className={styles.infoLabel}>اسم المستلم</Box>
+                <input
+                  type="text"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  className={styles.infoInput}
+                />
+              </Box>
+              <Box className={styles.infoItemBox}>
+                <Box className={styles.infoLabel}>مدير المخازن </Box>
+                <input
+                  type="text"
+                  value={warehouseManager}
+                  onChange={(e) => setWarehouseManager(e.target.value)}
+                  className={styles.infoInput}
+                />
+              </Box>
+            </Box>
           </Box>
 
-          {/* Total Amount Section */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              marginTop: "10px",
-            }}
-          >
-            <Box
-              sx={{
-                padding: "8px 16px",
-                borderRadius: "8px",
-                display: "flex",
-                gap: 1,
-                backgroundColor: "white",
-                border: "1px solid #ddd",
-              }}
-            >
-              <Box sx={{ fontSize: "1rem", fontWeight: "600" }}>
-                الإجمالي / Total:
-              </Box>
-              <Box
-                sx={{
-                  marginLeft: 1,
-                  fontSize: "1rem",
-                  fontWeight: "400",
-                  color: "#1976d2",
-                }}
+          {/* Buttons Section */}
+          <Box className={styles.buttonsSection}>
+            {/* Add Comment Button */}
+            {!showCommentField ? (
+              <Button
+                variant="contained"
+                color="success"
+                onClick={handleAddComment}
+                className={`${styles.addCommentButton} ${styles.infoBtn}`}
               >
-                {totalAmount}
-              </Box>
-            </Box>
-          </Box>
-
-          {/* Comment Field */}
-          {showCommentField && (
-            <Box>
-              <TextField
-                multiline
-                rows={2}
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
+                تعليق
+              </Button>
+            ) : (
+              <Button
                 variant="outlined"
-                fullWidth
-                sx={{
-                  marginTop: 2,
-                  borderRadius: "8px",
-                  "& .MuiOutlinedInput-input": {
-                    textAlign: "center",
-                  },
-                  "& .MuiInputBase-root": { height: "auto" },
-                }}
-              />
-            </Box>
-          )}
+                color="error"
+                onClick={handleCancelComment}
+                className={`${styles.cancelCommentButton} ${styles.infoBtn}`}
+              >
+                الغاء
+              </Button>
+            )}
 
-          {/* Information Section */}
-          <Box
-            sx={{
-              marginTop: 3,
-              display: "flex",
-              justifyContent: "space-around",
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-start",
-                marginBottom: 2,
-                gap: 2,
-                flexDirection: "column",
-              }}
-            >
-              <Box sx={{ fontWeight: "bold", color: "#555" }}>
-                اسم الموظف / Employee Name
-              </Box>
-              <Box sx={{ color: "#555" }}>{user.username}</Box>
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-start",
-                marginBottom: 2,
-                gap: 2,
-                flexDirection: "column",
-              }}
-            >
-              <Box sx={{ fontWeight: "bold", color: "#555" }}>
-                اسم المستلم / Client Name
-              </Box>
-              <input
-                type="text"
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                style={{
-                  border: "none",
-                  outline: "none",
-                  height: "40px",
-                  textAlign: "center",
-                }}
-              />
-            </Box>
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-start",
-                marginBottom: 2,
-                gap: 2,
-                flexDirection: "column",
-              }}
-            >
-              <Box sx={{ fontWeight: "bold", color: "#555" }}>
-                مدير المخازن / Warehouse Manager
-              </Box>
-              <input
-                type="text"
-                value={warehouseManager}
-                onChange={(e) => setWarehouseManager(e.target.value)}
-                style={{
-                  border: "none",
-                  outline: "none",
-                  height: "40px",
-                  textAlign: "center",
-                }}
-              />
-            </Box>
-          </Box>
-        </Box>
-
-        {/* Buttons Section */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 2,
-            marginTop: 3,
-          }}
-        >
-          {/* Add Comment Button */}
-          {!showCommentField ? (
+            {/* Sure Button */}
             <Button
               variant="contained"
-              color="success"
-              onClick={handleAddComment}
-              sx={{
-                padding: "12px 24px",
-                borderRadius: "12px",
-                fontWeight: "bold",
-                backgroundColor: "#4CAF50",
-                "&:hover": { backgroundColor: "#45a049" },
-              }}
+              color="primary"
+              onClick={handleSave}
+              className={`${styles.saveButton} ${styles.infoBtn}`}
             >
-              تعليق / Comment
+              تأكيد
             </Button>
-          ) : (
+
+            {/* Print Button */}
             <Button
-              variant="outlined"
-              color="error"
-              onClick={handleCancelComment}
-              sx={{
-                padding: "10px 20px",
-                borderRadius: "12px",
-                fontWeight: "bold",
-                borderColor: "#e57373",
-                "&:hover": { borderColor: "#d32f2f" },
-              }}
+              variant="contained"
+              color="info"
+              onClick={handlePrint}
+              className={`${styles.printButton} ${styles.infoBtn}`}
             >
-              الغاء / Cancel
+              طباعة
             </Button>
-          )}
-
-          {/* Sure Button */}
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSave}
-            sx={{
-              padding: "12px 24px",
-              borderRadius: "12px",
-              fontWeight: "bold",
-              backgroundColor: "#1976d2",
-              "&:hover": { backgroundColor: "#1565c0" },
-            }}
-          >
-            تأكيد / Save
-          </Button>
-
-          {/* Print Button */}
-          <Button
-            variant="contained"
-            color="info"
-            onClick={handlePrint}
-            sx={{
-              padding: "12px 24px",
-              borderRadius: "12px",
-              fontWeight: "bold",
-              backgroundColor: "#00bcd4",
-              "&:hover": { backgroundColor: "#0097a7" },
-            }}
-          >
-            طباعة / Print
-          </Button>
+          </Box>
         </Box>
-      </Box>
+      )}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={2000}
         onClose={() => setOpenSnackbar(false)}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        sx={{
-          zIndex: "99999999999999999999999999999999999999",
-        }}
+        className={styles.snackbar}
       >
-        <Alert onClose={() => setOpenSnackbar(false)} severity={snackBarType}>
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity={snackBarType}
+          className={styles.alert}
+        >
           {snackbarMessage}
         </Alert>
       </Snackbar>

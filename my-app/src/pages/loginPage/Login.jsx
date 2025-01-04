@@ -40,11 +40,11 @@ const Login = () => {
 
     // Input validation
     if (!name) {
-      setNameError("Name is required");
+      setNameError("يرجى ادخال الاسم");
       return;
     }
     if (!password) {
-      setPasswordError("Password is required");
+      setPasswordError("يرجى ادخال كلمة المرور");
       return;
     }
 
@@ -63,7 +63,9 @@ const Login = () => {
       });
 
       if (!response.ok) {
-        setSnackbarMessage("Login failed. Please check your credentials.");
+        setSnackbarMessage(
+          "فشل تسجيل الدخول. يرجى التحقق من البيانات الخاصة بك."
+        );
         setOpenSnackbar(true);
         throw new Error("Network response was not ok");
       }
@@ -74,7 +76,9 @@ const Login = () => {
       login(data); // Assuming login is a context or state function
     } catch (error) {
       console.error("Error:", error);
-      setSnackbarMessage("Wrong username or password, please try again");
+      setSnackbarMessage(
+        "اسم المستخدم أو كلمة المرور خاطئة، يرجى المحاولة مرة أخرى"
+      );
       setOpenSnackbar(true);
     }
   };
@@ -122,9 +126,9 @@ const Login = () => {
             <LockOutlinedIcon className={styles.icon} />
             <h2 className={styles.subTitle}>Login</h2>
             <Box component="form" className={styles.textFields}>
-              {/* Email Field */}
+              {/* Name Field */}
               <TextField
-                label="Name"
+                label="الاسم"
                 variant="outlined"
                 required
                 value={name}
@@ -132,10 +136,31 @@ const Login = () => {
                 className={styles.textField}
                 error={!!nameError}
                 helperText={nameError}
+                slotProps={{
+                  input: {
+                    style: {
+                      direction: "rtl",
+                    },
+                  },
+                  inputLabel: {
+                    style: {
+                      textAlign: "right",
+                      width: "calc(100% - 28px)",
+                    },
+                  },
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    textAlign: "right",
+                  },
+                  "& .MuiInputLabel-root": {
+                    transformOrigin: "right",
+                  },
+                }}
               />
               {/* Password Field */}
               <TextField
-                label="Password"
+                label="كلمة المرور"
                 type={showPassword ? "text" : "password"}
                 variant="outlined"
                 required
@@ -157,14 +182,26 @@ const Login = () => {
                         </IconButton>
                       </InputAdornment>
                     ),
+                    style: {
+                      direction: "rtl",
+                    },
+                  },
+                  inputLabel: {
+                    style: {
+                      textAlign: "right",
+                      width: "calc(100% - 28px)",
+                    },
+                  },
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    textAlign: "right",
+                  },
+                  "& .MuiInputLabel-root": {
+                    transformOrigin: "right",
                   },
                 }}
               />
-              {/* {formError && (
-                <p style={{ color: "red", textAlign: "center" }}>
-                  Please, Try again
-                </p>
-              )} */}
               {/* Submit Button */}
               <Button
                 type="submit"
@@ -172,7 +209,7 @@ const Login = () => {
                 className={styles.btn}
                 onClick={handleSubmit}
               >
-                Sign In
+                تسجيل الدخول
               </Button>
             </Box>
           </Paper>
@@ -187,7 +224,6 @@ const Login = () => {
             {snackbarMessage}
           </Alert>
         </Snackbar>
-
       </Box>
     </div>
   );

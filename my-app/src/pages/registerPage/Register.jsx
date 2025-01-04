@@ -7,7 +7,6 @@ import {
   InputAdornment,
   IconButton,
   Snackbar,
-  Slide,
   FormControl,
   InputLabel,
   Select,
@@ -20,6 +19,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import styles from "./Register.module.css";
 import { useNavigate } from "react-router-dom";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 export default function Register() {
   const [username, setUserName] = useState("");
@@ -59,45 +59,42 @@ export default function Register() {
     setConfirmPasswordError("");
 
     if (!username) {
-      setNameError("Name is required");
+      setNameError("يرجى ادخال الاسم");
       return;
     } else if (username.length > 80) {
-      setNameError("Name cannot be longer than 80 characters");
+      setNameError("الاسم لا يمكن أن يكون أطول من 80 حرفًا");
       return;
     }
 
     if (!phoneNumber) {
-      setPhoneError("Phone number is required");
+      setPhoneError("يرجى ادخال رقم الهاتف");
       return;
     } else if (!validatePhone(phoneNumber)) {
-      setPhoneError("Invalid phone number");
+      setPhoneError("رقم الهاتف غير صالح");
       return;
     } else if (phoneNumber.length > 20) {
-      setPhoneError("Phone number cannot be longer than 20 digits");
+      setPhoneError("رقم الهاتف لا يمكن أن يتجاوز 20 رقمًا");
       return;
     }
 
     if (!jobName) {
-      setJobError("Job name is required");
-      return;
-    } else if (jobName.length > 100) {
-      setJobError("Job name cannot be longer than 100 characters");
+      setJobError("يرجى ادخال اسم الوظيفة");
       return;
     }
 
     if (!password) {
-      setPasswordError("Password is required");
+      setPasswordError("يرجى ادخال كلمة المرور");
       return;
     } else if (password.length < 6 || password.length > 120) {
-      setPasswordError("Password must be between 6 and 120 characters");
+      setPasswordError("يجب أن تتراوح كلمة المرور بين 6 و 120 حرفًا");
       return;
     }
 
     if (!confirmPassword) {
-      setConfirmPasswordError("Confirm password is required");
+      setConfirmPasswordError("يرجى تأكيد كلمة المرور");
       return;
     } else if (password !== confirmPassword) {
-      setConfirmPasswordError("Passwords do not match");
+      setConfirmPasswordError("كلمات المرور غير متطابقة");
       return;
     }
 
@@ -120,7 +117,7 @@ export default function Register() {
           response.json().then((data) => {
             setOpenSnackbar(true);
             setSnackBarType("info");
-            setSnackbarMessage(data.message || "Validation error occurred");
+            setSnackbarMessage("الموظف موجود بالفعل");
           });
         }
         console.log("Response status:", response.status);
@@ -135,18 +132,17 @@ export default function Register() {
           return response.json();
         } else {
           return response.json().then((data) => {
-            throw new Error(data.message || "Network response was not ok");
+            throw new Error(data.message || "الاستجابة من الشبكة لم تكن صحيحة");
           });
         }
       })
       .then((data) => {
-        setSnackbarMessage(data.message || "User registered successfully");
+        setSnackbarMessage("تم تسجيل الموظف بنجاح");
+        setSnackBarType("success");
         setOpenSnackbar(true);
       })
       .catch((error) => {
-        setSnackbarMessage(
-          error.message || "Registration failed. Please try again."
-        );
+        setSnackbarMessage("فشل التسجيل. يرجى المحاولة مرة أخرى.");
         setOpenSnackbar(true);
         console.error("Error:", error);
       });
@@ -155,6 +151,15 @@ export default function Register() {
   const handleBack = () => {
     navigate(-1);
   };
+
+  const CustomArrow = (props) => (
+    <ArrowDropDownIcon
+      {...props}
+      sx={{
+        marginRight: "85%",
+      }}
+    />
+  );
 
   return (
     <div className={styles.container}>
@@ -168,7 +173,7 @@ export default function Register() {
           <IconButton className={styles.iconBtn} onClick={handleBack}>
             <ArrowBackOutlinedIcon className={styles.arrow} />
           </IconButton>
-          <h2 className={styles.subTitle}>Register</h2>
+          <h2 className={styles.subTitle}>التسجيل</h2>
           <Box
             component="form"
             onSubmit={handleSubmit}
@@ -176,7 +181,7 @@ export default function Register() {
           >
             {/* Name Field */}
             <TextField
-              label="Name"
+              label="الاسم"
               variant="outlined"
               required
               value={username}
@@ -184,10 +189,31 @@ export default function Register() {
               className={styles.textField}
               error={!!nameError}
               helperText={nameError}
+              slotProps={{
+                input: {
+                  style: {
+                    direction: "rtl",
+                  },
+                },
+                inputLabel: {
+                  style: {
+                    textAlign: "right",
+                    width: "calc(100% - 28px)",
+                  },
+                },
+              }}
+              sx={{
+                "& .MuiOutlinedInput-notchedOutline": {
+                  textAlign: "right",
+                },
+                "& .MuiInputLabel-root": {
+                  transformOrigin: "right",
+                },
+              }}
             />
             {/* Phone Field */}
             <TextField
-              label="Phone Number"
+              label="رقم الهاتف"
               variant="outlined"
               required
               value={phoneNumber}
@@ -195,30 +221,79 @@ export default function Register() {
               className={styles.textField}
               error={!!phoneError}
               helperText={phoneError}
+              slotProps={{
+                input: {
+                  style: {
+                    direction: "rtl",
+                  },
+                },
+                inputLabel: {
+                  style: {
+                    textAlign: "right",
+                    width: "calc(100% - 28px)",
+                  },
+                },
+              }}
+              sx={{
+                "& .MuiOutlinedInput-notchedOutline": {
+                  textAlign: "right",
+                },
+                "& .MuiInputLabel-root": {
+                  transformOrigin: "right",
+                },
+              }}
             />
 
-            {/* Phone Field */}
+            {/* job Field */}
             <FormControl
               className={styles.textField}
               variant="outlined"
-              error={!!jobError} // تحديد حالة الخطأ
+              error={!!jobError}
             >
-              <InputLabel>Job Name</InputLabel>
+              <InputLabel
+                id="demo-simple-select-label"
+                sx={{
+                  textAlign: "right",
+                  width: "calc(100% - 28px)",
+                  transformOrigin: "right",
+                }}
+              >
+                الوظيفة
+              </InputLabel>
               <Select
                 value={jobName}
                 onChange={(e) => setJobName(e.target.value)}
-                label="Job Name"
-                fullWidth
+                label="الوظيفة"
+                sx={{
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    textAlign: "right",
+                  },
+                }}
+                IconComponent={CustomArrow}
               >
-                <MenuItem value="Developer">Developer</MenuItem>
-                <MenuItem value="Manager">Manager</MenuItem>
+                <MenuItem
+                  sx={{
+                    direction: "rtl",
+                  }}
+                  value="مبرمج"
+                >
+                  مبرمج
+                </MenuItem>
+                <MenuItem
+                  sx={{
+                    direction: "rtl",
+                  }}
+                  value="مدير"
+                >
+                  مدير
+                </MenuItem>
               </Select>
               {!!jobError && <FormHelperText>{jobError}</FormHelperText>}
             </FormControl>
 
             {/* Password Field */}
             <TextField
-              label="Password"
+              label="كلمة المرور"
               type={showPassword ? "text" : "password"}
               variant="outlined"
               required
@@ -240,11 +315,28 @@ export default function Register() {
                       </IconButton>
                     </InputAdornment>
                   ),
+                  style: {
+                    direction: "rtl",
+                  },
+                },
+                inputLabel: {
+                  style: {
+                    textAlign: "right",
+                    width: "calc(100% - 28px)",
+                  },
+                },
+              }}
+              sx={{
+                "& .MuiOutlinedInput-notchedOutline": {
+                  textAlign: "right",
+                },
+                "& .MuiInputLabel-root": {
+                  transformOrigin: "right",
                 },
               }}
             />
             <TextField
-              label="Confirm Password"
+              label="تأكيد كلمة المرور"
               type={showPassword ? "text" : "password"}
               variant="outlined"
               required
@@ -253,6 +345,27 @@ export default function Register() {
               className={styles.textField}
               error={!!confirmPasswordError}
               helperText={confirmPasswordError}
+              slotProps={{
+                input: {
+                  style: {
+                    direction: "rtl",
+                  },
+                },
+                inputLabel: {
+                  style: {
+                    textAlign: "right",
+                    width: "calc(100% - 28px)",
+                  },
+                },
+              }}
+              sx={{
+                "& .MuiOutlinedInput-notchedOutline": {
+                  textAlign: "right",
+                },
+                "& .MuiInputLabel-root": {
+                  transformOrigin: "right",
+                },
+              }}
             />
             {formError && (
               <p style={{ color: "red", textAlign: "center" }}>{formError}</p>
@@ -265,7 +378,7 @@ export default function Register() {
             className={styles.btn}
             onClick={handleSubmit}
           >
-            Create User
+            إضافة موظف
           </Button>
         </Paper>
       </Box>
