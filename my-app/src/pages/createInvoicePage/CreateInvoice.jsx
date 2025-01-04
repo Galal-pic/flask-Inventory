@@ -359,7 +359,7 @@ export default function Type1() {
   };
   useEffect(() => {
     const filteredItems = rows.filter(
-      (row) => row.itemName.trim() !== "" && parseFloat(row.total) > 0
+      (row) => row.itemName.trim() !== ""
     );
     setItems(
       filteredItems.map((row) => ({
