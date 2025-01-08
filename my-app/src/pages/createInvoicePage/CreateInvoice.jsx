@@ -13,6 +13,8 @@ import {
   IconButton,
   Snackbar,
   Alert,
+  Autocomplete,
+  InputLabel,
 } from "@mui/material";
 import ClearIcon from "@mui/icons-material/Clear";
 import AddIcon from "@mui/icons-material/Add";
@@ -20,25 +22,18 @@ import logo from "./logo.png";
 import styles from "./CreateInvoice.module.css";
 
 export default function Type1() {
-  // getUserName
+  // User data fetch
   const [user, setUser] = useState({});
   useEffect(() => {
     const fetchUserData = async () => {
       const accessToken = localStorage.getItem("access_token");
-      if (!accessToken) {
-        console.error("No access token found.");
-        return;
-      }
+      if (!accessToken) return;
       try {
         const response = await fetch("http://127.0.0.1:5000/auth/user", {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${accessToken}` },
         });
-        if (!response.ok) {
-          throw new Error(`Failed to fetch user data: ${response.statusText}`);
-        }
+        if (!response.ok) return;
         const data = await response.json();
         setUser(data);
       } catch (err) {
@@ -48,38 +43,36 @@ export default function Type1() {
     fetchUserData();
   }, []);
 
-  // Get Last ID
-  const [voucherNumber, setVoucherNumber] = useState(null);
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const accessToken = localStorage.getItem("access_token");
-      if (!accessToken) {
-        console.error("No access token found.");
-        return;
-      }
-      try {
-        const response = await fetch("http://127.0.0.1:5000/invoices/last-id", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`Failed to fetch user data: ${response.statusText}`);
-        }
-        const id = await response.json();
-        setVoucherNumber(id);
-      } catch (err) {
-        console.error("Error fetching user data:", err);
-      }
-    };
-    fetchUserData();
-  }, [voucherNumber]);
+  // States for form fields
   const operationTypes = ["صرف", "أمانات", "مرتجع", "توالف", "حجز"];
-  const [operationType, setOperationType] = useState("");
-
-  const purchasesTypes = ["إضافة"];
+  const [operationType, setOperationType] = useState(operationTypes[0]);
   const [purchasesType, setPurchasesType] = useState("");
+  const [warehouseName, setWarehouseName] = useState("");
+  const purchasesTypes = ["إضافة"];
+  const warehouses = ["المخزن الأول", "المخزن الثاني", "المخزن الثالث"];
+  const [selectedItem, setSelectedItem] = useState(null);
+  const itemsNames = [
+    { name: "item 1", parcode: "123" },
+    { name: "item 2", parcode: "456" },
+    { name: "item 3", parcode: "789" },
+    { name: "item 4", parcode: "1234" },
+  ];
+  const handleWarehouseChange = (event, newValue) => {
+    setWarehouseName(newValue || "");
+  };
+  const handleItemChange = (event, newValue, index) => {
+    const newRows = [...rows];
+
+    if (newValue) {
+      newRows[index].itemsBar = newValue.parcode;
+      newRows[index].itemName = newValue.name;
+    } else {
+      newRows[index].itemsBar = "";
+      newRows[index].itemName = "";
+    }
+
+    setRows(newRows);
+  };
 
   const [rows, setRows] = useState([
     {
@@ -87,9 +80,9 @@ export default function Type1() {
       itemsBar: "",
       itemName: "",
       quantity: 0,
-      ...(purchasesType && { price: 0 }),
+      price: 0,
       description: "",
-      ...(purchasesType && { total: 0 }),
+      total: 0,
     },
   ]);
   const rowRefs = useRef([]);
@@ -254,6 +247,15 @@ export default function Type1() {
       },
     ]);
   };
+  const removeRow = (index) => {
+    const newRows = rows.filter((row, i) => i !== index);
+    setRows(newRows.map((row, i) => ({ ...row, counter: i + 1 })));
+    rowRefs.current = newRows.map(() =>
+      Array(6)
+        .fill(null)
+        .map(() => React.createRef())
+    );
+  };
 
   // Calculate the total
   const totalAmount = rows
@@ -281,15 +283,27 @@ export default function Type1() {
     setTime(formattedTime);
   }, []);
 
-  const removeRow = (index) => {
-    const newRows = rows.filter((row, i) => i !== index);
-    setRows(newRows.map((row, i) => ({ ...row, counter: i + 1 })));
-    rowRefs.current = newRows.map(() =>
-      Array(6)
-        .fill(null)
-        .map(() => React.createRef())
-    );
-  };
+  // Fetch last voucher ID
+  const [lastSaved, setLastSaved] = useState(0);
+  const [voucherNumber, setVoucherNumber] = useState(null);
+  useEffect(() => {
+    const fetchVoucherId = async () => {
+      const accessToken = localStorage.getItem("access_token");
+      if (!accessToken) return;
+      try {
+        const response = await fetch("http://127.0.0.1:5000/invoices/last-id", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (!response.ok) return;
+        const id = await response.json();
+        setVoucherNumber(id);
+      } catch (err) {
+        console.error("Error fetching voucher ID:", err);
+      }
+    };
+    fetchVoucherId();
+  }, [lastSaved]);
 
   const handleInputChange = (index, field, value) => {
     const newRows = [...rows];
@@ -298,6 +312,9 @@ export default function Type1() {
       const quantity = parseFloat(newRows[index].quantity) || 0;
       const price = parseFloat(newRows[index].price) || 0;
       newRows[index].total = (quantity * price).toFixed(2);
+    }
+    if (field === "itemName" && selectedItem) {
+      newRows[index].itemsBar = selectedItem.parcode;
     }
     setRows(newRows);
   };
@@ -358,9 +375,7 @@ export default function Type1() {
     document.head.removeChild(style);
   };
   useEffect(() => {
-    const filteredItems = rows.filter(
-      (row) => row.itemName.trim() !== ""
-    );
+    const filteredItems = rows.filter((row) => row.itemName.trim() !== "");
     setItems(
       filteredItems.map((row) => ({
         ...row,
@@ -369,6 +384,14 @@ export default function Type1() {
     );
   }, [rows]);
 
+  const handleDeleteItem = (index) => {
+    const newRows = [...rows]; // إنشاء نسخة من الـ rows الحالي
+
+    newRows[index].itemsBar = ""; // حذف قيمة الباركود
+    newRows[index].itemName = ""; // حذف اسم العنصر
+
+    setRows(newRows); // تحديث الـ state
+  };
   const handleSave = async () => {
     // Validate that at least one item is entered
     if (items.length === 0) {
@@ -381,7 +404,7 @@ export default function Type1() {
 
     // Prepare data to send
     const dataToSend = {
-      type: operationType,
+      type: operationType || purchasesType,
       machine_name: machineName,
       mechanism: mechanismName,
       client_name: clientName,
@@ -397,6 +420,29 @@ export default function Type1() {
         description: item.description,
       })),
     };
+    // const dataToSend = {
+    //   id: voucherNumber.last_id,
+    //   type: operationType || purchasesType,
+    //   machine_name: machineName,
+    //   mechanism: mechanismName,
+    //   client_name: clientName,
+    //   Warehouse: warehouseName,
+    //   Warehouse_manager: warehouseManager,
+    //   total_amount: parseFloat(totalAmount),
+    //   Employee_Name: user.username,
+    //   date: date,
+    //   time: time,
+    //   comment: comment,
+    //   items: items.map((item) => ({
+    //     name: item.itemName,
+    //     item_bar: item.itemsBar,
+    //     quantity: item.quantity ? parseFloat(item.quantity) : 0,
+    //     price: item.price ? parseFloat(item.price) : 0,
+    //     total_price: item.totalPrice ? parseFloat(item.totalPrice) : 0,
+    //     description: item.description,
+    //   })),
+    // };
+    console.log(dataToSend);
 
     try {
       const accessToken = localStorage.getItem("access_token");
@@ -418,15 +464,30 @@ export default function Type1() {
       setOpenSnackbar(true);
       setSnackbarMessage("تم إنشاء الفاتورة بنجاح");
       setSnackBarType("success");
+      setRows("");
+
       setRows([
         {
           counter: 1,
           itemsBar: "",
           itemName: "",
           quantity: 0,
-          ...(purchasesType && { price: 0 }),
+          price: 0,
           description: "",
-          ...(purchasesType && { total: 0 }),
+          total: 0,
+        },
+      ]);
+      setItems([]);
+      console.log(rows);
+      setRows([
+        {
+          counter: 1,
+          itemsBar: "",
+          itemName: "",
+          quantity: 0,
+          price: 0,
+          description: "",
+          total: 0,
         },
       ]);
       setMachineName("");
@@ -435,7 +496,10 @@ export default function Type1() {
       setMechanismInfo("");
       setClientName("");
       setWarehouseManager("");
-      handleCancelComment();
+      setComment("");
+      setShowCommentField(false);
+      setItems([]);
+      setLastSaved((prev) => prev + 1);
     } catch (error) {
       console.error("Error creating invoice:", error);
       setOpenSnackbar(true);
@@ -444,7 +508,7 @@ export default function Type1() {
     }
   };
 
-  const [lastSelected, setLastSelected] = useState(""); // لتتبع آخر اختيار
+  const [lastSelected, setLastSelected] = useState("");
 
   useEffect(() => {
     if (operationType !== "") {
@@ -459,6 +523,7 @@ export default function Type1() {
       setOperationType("");
     }
   }, [purchasesType]);
+  // console.log(rows);
 
   return (
     <Box className={styles.mainBox}>
@@ -467,49 +532,80 @@ export default function Type1() {
         sx={{
           display: "flex",
           justifyContent: "center",
-          gap: 10,
+          gap: 4,
+          flexWrap: "wrap",
+          alignItems: "center",
         }}
       >
         <div className={styles.operationTypeSelection}>
-          <label className={styles.operationTypeLabel}>مشتريات</label>
-          <FormControl className={styles.operationTypeFormControl}>
+          <FormControl variant="standard" sx={{ m: 1, minWidth: 220 }}>
+            <InputLabel
+              id="purchases-select-label"
+              sx={{
+                fontSize: "1.2rem",
+                fontWeight: "600",
+                marginBottom: "6px",
+                color: "#1976d2",
+                transition: "all 0.3s ease",
+                position: "absolute",
+                top: "50%",
+                left: "48%",
+                "&.Mui-focused": {
+                  transform: "translate(-37px, -60px)",
+                },
+                transform: purchasesType
+                  ? "translate(-37px, -60px)"
+                  : "translate(-50%, -50%)",
+              }}
+            >
+              مشتريات
+            </InputLabel>
             <Select
-              className={styles.operationTypeSelect}
+              labelId="purchases-select-label"
               value={purchasesType}
               onChange={(e) => setPurchasesType(e.target.value)}
-              displayEmpty
+              label="مشتريات"
             >
               {purchasesTypes.map((type, index) => (
-                <MenuItem
-                  sx={{
-                    direction: "rtl",
-                  }}
-                  key={index}
-                  value={type}
-                >
+                <MenuItem key={index} value={type}>
                   {type}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
         </div>
+
         <div className={styles.operationTypeSelection}>
-          <label className={styles.operationTypeLabel}>عمليات</label>
-          <FormControl className={styles.operationTypeFormControl}>
+          <FormControl variant="standard" sx={{ m: 1, minWidth: 220 }}>
+            <InputLabel
+              id="purchases-select-label"
+              sx={{
+                fontSize: "1.2rem",
+                fontWeight: "600",
+                marginBottom: "6px",
+                color: "#1976d2",
+                transition: "all 0.3s ease",
+                position: "absolute",
+                top: "50%",
+                left: "48%",
+                "&.Mui-focused": {
+                  transform: "translate(-30px, -60px)",
+                },
+                transform: operationType
+                  ? "translate(-30px, -60px)"
+                  : "translate(-50%, -50%)",
+              }}
+            >
+              عمليات
+            </InputLabel>
             <Select
-              className={styles.operationTypeSelect}
+              labelId="operation-select-label"
               value={operationType}
               onChange={(e) => setOperationType(e.target.value)}
-              displayEmpty
+              label="عمليات"
             >
               {operationTypes.map((type, index) => (
-                <MenuItem
-                  sx={{
-                    direction: "rtl",
-                  }}
-                  key={index}
-                  value={type}
-                >
+                <MenuItem key={index} value={type}>
                   {type}
                 </MenuItem>
               ))}
@@ -549,6 +645,34 @@ export default function Type1() {
                 </Box>
               </Box>
             </Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginBottom: "20px",
+              }}
+            >
+              {/* Autocomplete for warehouses */}
+
+              <Autocomplete
+                options={warehouses}
+                value={warehouseName}
+                onChange={handleWarehouseChange}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder="اختر المستودع"
+                    variant="outlined"
+                  />
+                )}
+                sx={{
+                  marginBottom: "16px",
+                  "& .MuiOutlinedInput-root": { borderRadius: "4px" },
+                  direction: "rtl",
+                  minWidth: "200px",
+                }}
+              />
+            </Box>
 
             {/* Table Section */}
             <Box className={styles.tableSection}>
@@ -568,19 +692,11 @@ export default function Type1() {
                     <TableCell className={styles.tableCell} colSpan={2}>
                       اسم الماكينة
                     </TableCell>
-                    <TableCell className={styles.tableInputCell} colSpan={1}>
+                    <TableCell className={styles.tableInputCell} colSpan={5}>
                       <input
                         type="text"
                         value={machineName}
                         onChange={(e) => setMachineName(e.target.value)}
-                        className={styles.cellInput}
-                      />
-                    </TableCell>
-                    <TableCell className={styles.tableInputCell} colSpan={4}>
-                      <input
-                        type="text"
-                        value={machineInfo}
-                        onChange={(e) => setMachineInfo(e.target.value)}
                         className={styles.cellInput}
                       />
                     </TableCell>
@@ -589,19 +705,11 @@ export default function Type1() {
                     <TableCell className={styles.tableCell} colSpan={2}>
                       اسم الميكانيزم
                     </TableCell>
-                    <TableCell className={styles.tableInputCell} colSpan={1}>
+                    <TableCell className={styles.tableInputCell} colSpan={5}>
                       <input
                         type="text"
                         value={mechanismName}
                         onChange={(e) => setMechanismName(e.target.value)}
-                        className={styles.cellInput}
-                      />
-                    </TableCell>
-                    <TableCell className={styles.tableInputCell} colSpan={4}>
-                      <input
-                        type="text"
-                        value={mechanismInfo}
-                        onChange={(e) => setMechanismInfo(e.target.value)}
                         className={styles.cellInput}
                       />
                     </TableCell>
@@ -653,34 +761,65 @@ export default function Type1() {
                         </IconButton>
                       </TableCell>
 
-                      <TableCell className={styles.tableCellRow}>
-                        <input
-                          type="text"
-                          value={row.itemName}
-                          onChange={(e) =>
-                            handleInputChange(index, "itemName", e.target.value)
-                          }
-                          className={styles.cellInput}
-                          ref={rowRefs.current[index]?.[0]}
-                          onKeyDown={(e) => handleKeyDown(e, index, 0)}
+                      <TableCell
+                        sx={{
+                          "&.MuiTableCell-root": {
+                            padding: "0px",
+                          },
+                        }}
+                        className={styles.tableCellRow}
+                      >
+                        {/* Autocomplete for items */}
+                        <Autocomplete
+                          options={itemsNames}
+                          getOptionLabel={(option) => option.name}
+                          // disableUnderline={true}
+                          onChange={(e, newValue) => {
+                            handleItemChange(e, newValue, index); // تحديث صف محدد فقط
+                            handleInputChange(
+                              index,
+                              "itemName",
+                              newValue ? newValue.name : ""
+                            );
+                          }}
+                          value={
+                            rows[index].itemName
+                              ? { name: rows[index].itemName }
+                              : null
+                          } // استخدام القيمة المحددة أو null إذا كانت فارغة
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              padding: "10px",
+                            },
+                            "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                              {
+                                border: "none",
+                              },
+                          }}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              placeholder="اختر العنصر"
+                              sx={{
+                                minWidth: "200px",
+                              }}
+                            />
+                          )}
                         />
                       </TableCell>
                       <TableCell className={styles.tableCellRow}>
-                        <input
-                          type="text"
-                          value={row.itemsBar}
-                          onChange={(e) =>
-                            handleInputChange(index, "itemsBar", e.target.value)
-                          }
-                          className={styles.cellInput}
-                          ref={rowRefs.current[index]?.[1]}
-                          onKeyDown={(e) => handleKeyDown(e, index, 1)}
-                        />
+                        {row.itemsBar || ""}
                       </TableCell>
                       <TableCell className={styles.tableCellRow}>
                         <input
                           type="number"
+                          min="0"
                           value={row.quantity}
+                          onInput={(e) => {
+                            if (e.target.value < 0) {
+                              e.target.value = 0;
+                            }
+                          }}
                           onChange={(e) =>
                             handleInputChange(index, "quantity", e.target.value)
                           }
@@ -696,6 +835,12 @@ export default function Type1() {
                             <input
                               type="number"
                               value={row.price}
+                              min="0"
+                              onInput={(e) => {
+                                if (e.target.value < 0) {
+                                  e.target.value = 0;
+                                }
+                              }}
                               onChange={(e) =>
                                 handleInputChange(
                                   index,

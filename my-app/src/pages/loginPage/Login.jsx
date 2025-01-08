@@ -1,37 +1,29 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Button,
-  TextField,
-  Paper,
-  InputAdornment,
-  IconButton,
-  Snackbar,
-  Alert,
-} from "@mui/material";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { Box, Button, Paper } from "@mui/material";
 import styles from "./Login.module.css";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../context/AuthContext";
 import { motion } from "framer-motion";
 import logo from "./logo.png";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import SnackBar from "../../components/snackBar/SnackBar";
+import { CustomTextField } from "../../components/customTextField/CustomTextField";
 
 const Login = () => {
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const navigate = useNavigate();
 
-  const handleClickShowPassword = () => {
-    setShowPassword((prev) => !prev);
+  // Handle close snack
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
   };
 
+  // Handle login
   const handleSubmit = async (e) => {
     e.preventDefault();
     setNameError("");
@@ -83,13 +75,6 @@ const Login = () => {
     }
   };
 
-  // Close Snackbar
-  const handleCloseSnackbar = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setOpenSnackbar(false);
-  };
   return (
     <div className={styles.container}>
       <div className={styles.boxText}>
@@ -117,6 +102,7 @@ const Login = () => {
         }}
         className={styles.boxForm}
       >
+        {/* login part */}
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -127,81 +113,24 @@ const Login = () => {
             <h2 className={styles.subTitle}>Login</h2>
             <Box component="form" className={styles.textFields}>
               {/* Name Field */}
-              <TextField
+              <CustomTextField
                 label="الاسم"
-                variant="outlined"
-                required
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                setValue={setName}
+                valueError={nameError}
                 className={styles.textField}
-                error={!!nameError}
-                helperText={nameError}
-                slotProps={{
-                  input: {
-                    style: {
-                      direction: "rtl",
-                    },
-                  },
-                  inputLabel: {
-                    style: {
-                      textAlign: "right",
-                      width: "calc(100% - 28px)",
-                    },
-                  },
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    textAlign: "right",
-                  },
-                  "& .MuiInputLabel-root": {
-                    transformOrigin: "right",
-                  },
-                }}
               />
+
               {/* Password Field */}
-              <TextField
+              <CustomTextField
                 label="كلمة المرور"
-                type={showPassword ? "text" : "password"}
-                variant="outlined"
-                required
+                type={"password"}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                setValue={setPassword}
+                valueError={passwordError}
                 className={styles.textField}
-                error={!!passwordError}
-                helperText={passwordError}
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={handleClickShowPassword}
-                          edge="end"
-                          className={styles.iconVisibility}
-                        >
-                          {showPassword ? <Visibility /> : <VisibilityOff />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                    style: {
-                      direction: "rtl",
-                    },
-                  },
-                  inputLabel: {
-                    style: {
-                      textAlign: "right",
-                      width: "calc(100% - 28px)",
-                    },
-                  },
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    textAlign: "right",
-                  },
-                  "& .MuiInputLabel-root": {
-                    transformOrigin: "right",
-                  },
-                }}
               />
+
               {/* Submit Button */}
               <Button
                 type="submit"
@@ -214,16 +143,14 @@ const Login = () => {
             </Box>
           </Paper>
         </motion.div>
-        <Snackbar
+
+        {/* Snackbar */}
+        <SnackBar
           open={openSnackbar}
+          message={snackbarMessage}
+          type="error"
           onClose={handleCloseSnackbar}
-          autoHideDuration={2000}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        >
-          <Alert variant="outlined" severity="error">
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
+        />
       </Box>
     </div>
   );

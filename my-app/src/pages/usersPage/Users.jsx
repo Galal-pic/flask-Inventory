@@ -249,71 +249,6 @@ export default function Users() {
 
   const columns = [
     {
-      field: "rowNumber",
-      headerName: "#",
-      width: 100,
-      sortable: false,
-    },
-    {
-      field: "username",
-      headerName: "الاسم",
-      flex: 1,
-      renderCell: (params) => {
-        if (editedRow && editedRow.id === params.id) {
-          return (
-            <TextField
-              sx={{ marginY: 0.2 }}
-              value={editedRow.username || ""}
-              onChange={(e) =>
-                setEditedRow({ ...editedRow, username: e.target.value })
-              }
-            />
-          );
-        }
-        return params.value;
-      },
-    },
-    {
-      field: "job_name",
-      headerName: "الوظيفة",
-      flex: 1,
-      renderCell: (params) => {
-        if (editedRow && editedRow.id === params.id) {
-          return (
-            <Select
-              value={editedRow.job_name || ""}
-              onChange={(e) =>
-                setEditedRow({ ...editedRow, job_name: e.target.value })
-              }
-            >
-              <MenuItem value="مبرمج">مبرمج</MenuItem>
-              <MenuItem value="مدير">مدير</MenuItem>
-            </Select>
-          );
-        }
-        return params.value;
-      },
-    },
-    {
-      field: "phone_number",
-      headerName: "رقم الهاتف",
-      flex: 1,
-      renderCell: (params) => {
-        if (editedRow && editedRow.id === params.id) {
-          return (
-            <TextField
-              sx={{ marginY: 0.2 }}
-              value={editedRow.phone_number || ""}
-              onChange={(e) =>
-                setEditedRow({ ...editedRow, phone_number: e.target.value })
-              }
-            />
-          );
-        }
-        return params.value;
-      },
-    },
-    {
       field: "actions",
       headerName: "الإجراءات",
       width: 150,
@@ -368,6 +303,72 @@ export default function Users() {
         );
       },
     },
+
+    {
+      field: "job_name",
+      headerName: "الوظيفة",
+      flex: 1,
+      renderCell: (params) => {
+        if (editedRow && editedRow.id === params.id) {
+          return (
+            <Select
+              value={editedRow.job_name || ""}
+              onChange={(e) =>
+                setEditedRow({ ...editedRow, job_name: e.target.value })
+              }
+            >
+              <MenuItem value="مبرمج">مبرمج</MenuItem>
+              <MenuItem value="مدير">مدير</MenuItem>
+            </Select>
+          );
+        }
+        return params.value;
+      },
+    },
+    {
+      field: "phone_number",
+      headerName: "رقم الهاتف",
+      flex: 1,
+      renderCell: (params) => {
+        if (editedRow && editedRow.id === params.id) {
+          return (
+            <TextField
+              sx={{ marginY: 0.2 }}
+              value={editedRow.phone_number || ""}
+              onChange={(e) =>
+                setEditedRow({ ...editedRow, phone_number: e.target.value })
+              }
+            />
+          );
+        }
+        return params.value;
+      },
+    },
+    {
+      field: "username",
+      headerName: "الاسم",
+      flex: 1,
+      renderCell: (params) => {
+        if (editedRow && editedRow.id === params.id) {
+          return (
+            <TextField
+              sx={{ marginY: 0.2 }}
+              value={editedRow.username || ""}
+              onChange={(e) =>
+                setEditedRow({ ...editedRow, username: e.target.value })
+              }
+            />
+          );
+        }
+        return params.value;
+      },
+    },
+    {
+      field: "rowNumber",
+      headerName: "#",
+      width: 100,
+      sortable: false,
+    },
   ];
 
   // fetch employees
@@ -389,7 +390,7 @@ export default function Users() {
     };
 
     fetchUserData();
-  }, [users]);
+  }, []);
 
   const localeText = {
     toolbarColumns: "الأعمدة",
@@ -453,17 +454,6 @@ export default function Users() {
     toolbarResetColumns: "إعادة تعيين",
   };
 
-  useEffect(() => {
-    const handleWheel = (event) => {
-      event.stopPropagation();
-    };
-    document.addEventListener("wheel", handleWheel);
-
-    return () => {
-      document.removeEventListener("wheel", handleWheel);
-    };
-  }, []);
-
   return (
     <div className={styles.container}>
       <h1 className={styles.head}>بيانات الموظفين</h1>
@@ -476,10 +466,9 @@ export default function Users() {
           headerAlign: "center",
           headerClassName: styles.headerCell,
         }))}
-        localeText={localeText} // تمرير النصوص المترجمة هنا
+        localeText={localeText}
         rowHeight={62}
         editMode="row"
-        // hideFooter={true}
         onCellDoubleClick={(params, event) => {
           event.stopPropagation();
         }}
@@ -497,7 +486,7 @@ export default function Users() {
         pagination
         paginationModel={paginationModel}
         onPaginationModelChange={handlePageChange}
-        disableVirtualization={false} // تأكد من أن هذه الخاصية غير معطلة
+        disableVirtualization={false}
         sx={{
           "& .MuiDataGrid-toolbarContainer": {
             paddingBottom: "10px",
@@ -523,7 +512,7 @@ export default function Users() {
           },
           backgroundColor: "white",
           border: "none",
-          direction: "rtl",
+          // direction: "rtl",
         }}
       />
 

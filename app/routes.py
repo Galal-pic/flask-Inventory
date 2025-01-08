@@ -63,6 +63,11 @@ class InventoryList(Resource):
 # Invoice Endpoints
 @invoice_ns.route('/')
 class InvoiceList(Resource):
+    @invoice_ns.marshal_list_with(invoice_model)
+    @jwt_required()
+    def get(self):
+        """Get all invoices items"""
+        return Invoice.query.all()
     @invoice_ns.expect(invoice_model)
     @invoice_ns.marshal_with(invoice_model)
     @jwt_required()
