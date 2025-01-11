@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styles from "./Header.module.css";
-import logo from "./logo.png";
+import logo from "./test.png";
 import { useAuth, logout } from "../../context/AuthContext";
 import { Button, Typography } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
@@ -11,8 +11,15 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
 import MenuIcon from "@mui/icons-material/Menu";
+import "../../colors.css";
+import { useLocation } from "react-router-dom";
 
+// liks
 const links = [
+  {
+    text: "أخرى",
+    href: "/others",
+  },
   {
     text: "الفواتير",
     href: "/invoices",
@@ -28,9 +35,9 @@ const links = [
 ];
 
 export default function Header() {
+  // get user data
   const [user, setUser] = useState({});
   const [logged] = useAuth();
-
   useEffect(() => {
     const fetchUserData = async () => {
       if (logged) {
@@ -67,12 +74,18 @@ export default function Header() {
     fetchUserData();
   }, [logged]);
 
-  const [selectedLink, setSelectedLink] = useState("/users");
+  // selected link
+  const [selectedLink, setSelectedLink] = useState("");
+  const location = useLocation();
+  useEffect(() => {
+    setSelectedLink(location.pathname);
+  }, [location]);
   const handleLinkClick = (href) => {
     setSelectedLink(href);
     navigate(href);
   };
 
+  // logOut
   const navigate = useNavigate();
   const handleLogout = async () => {
     logout();
@@ -80,8 +93,8 @@ export default function Header() {
     localStorage.clear();
   };
 
+  // drawer
   const [state, setState] = useState(false);
-
   const toggleDrawer = (open) => (event) => {
     if (
       event &&
@@ -93,17 +106,37 @@ export default function Header() {
     setState(open);
   };
 
+  // get colos
+  const primaryColor = getComputedStyle(
+    document.documentElement
+  ).getPropertyValue("--primary-color");
+
   return (
     <div className={styles.header}>
-      {/* NavBar */}
-      <Link to="/users">
-        <img src={logo} alt="" className={styles.logo} />
-      </Link>
+      {/* logo */}
+      <div
+        style={{ justifyContent: "flex-start" }}
+        className={styles.logoContainer}
+      >
+        <Link to="/users">
+          <img
+            style={{ justifyContent: "flex-start" }}
+            src={logo}
+            alt=""
+            className={styles.logo}
+          />
+        </Link>
+      </div>
+
+      {/* links */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-around",
           gap: "50px",
+          flex: 1,
+          transition: "0.2s",
+          height: "100%",
         }}
       >
         {links.map((link) => (
@@ -111,17 +144,24 @@ export default function Header() {
             key={link.text}
             style={{
               listStyle: "none",
+              alignItems: "center",
+              display: "flex",
+              transition: "0.2s",
+              borderBottom:
+                selectedLink === link.href
+                  ? "3px solid white"
+                  : `3px solid ${primaryColor}`,
             }}
           >
             <Link
+              to={link.href}
               style={{
                 textDecoration: "none",
-                color: selectedLink === link.href ? "#1976d2" : "black",
-                fontSize: "20px",
-                fontWeight: "bold",
-                marginRight: "20px",
+                color: selectedLink === link.href ? "white" : "#ccc",
+                marginRight: "10px",
+                margin: "auto",
+                fontWeight: selectedLink === link.href ? "bold" : "",
               }}
-              to={link.href}
               onClick={() => handleLinkClick(link.href)}
             >
               {link.text}
@@ -131,11 +171,15 @@ export default function Header() {
       </div>
 
       {/* Drawer icon */}
-      <Button onClick={toggleDrawer(true)} className={styles.drawerButton}>
+      <Button
+        sx={{ flex: 1, justifyContent: "flex-end" }}
+        onClick={toggleDrawer(true)}
+        className={styles.drawerButton}
+      >
         <MenuIcon
           sx={{
             fontSize: "50px",
-            color: "black",
+            color: "white",
           }}
         />
       </Button>

@@ -303,7 +303,6 @@ export default function Users() {
         );
       },
     },
-
     {
       field: "job_name",
       headerName: "الوظيفة",
@@ -381,7 +380,7 @@ export default function Users() {
         const data = await fetchData(`${API_BASE_URL}/users`, "GET");
         const updatedData = data.map((user, index) => ({
           ...user,
-          rowNumber: index + 1, // إضافة رقم الصف
+          rowNumber: index + 1,
         }));
         setUsers(updatedData);
       } catch (error) {

@@ -211,10 +211,17 @@ export default function Invoices() {
   // filters invoices
   const [operationType, setOperationType] = useState("");
   const operationTypes = ["كل الفواتير", "اضافه", "صرف", "امانات", "مرتجع"];
-  const filteredRows =
-    operationType === "" || operationType === "كل الفواتير"
-      ? invoices
-      : invoices.filter((row) => row.type === operationType);
+  const filteredAndFormattedData = invoices
+    .filter(
+      (invoice) =>
+        operationType === "" ||
+        operationType === "كل الفواتير" ||
+        invoice.type === operationType
+    )
+    .map((invoice) => ({
+      ...invoice,
+      itemsNames: invoice.items.map((item) => item.name).join(", "),
+    }));
 
   // columns
   const columns = [
@@ -239,6 +246,7 @@ export default function Invoices() {
         </div>
       ),
     },
+    { flex: 1, field: "itemsNames", headerName: "أسماء العناصر" },
     { flex: 1, field: "Employee_Name", headerName: "اسم الموظف" },
     { flex: 1, field: "Warehouse_manager", headerName: "مدير المخزن" },
     { flex: 1, field: "client_name", headerName: "اسم العميل" },
@@ -499,7 +507,7 @@ export default function Invoices() {
 
       {/* invoices data */}
       <DataGrid
-        rows={filteredRows}
+        rows={filteredAndFormattedData}
         columns={columns.map((col) => ({
           ...col,
           align: "center",
@@ -868,8 +876,14 @@ export default function Invoices() {
                                 ) || null
                               }
                               sx={{
-                                padding: "5px",
                                 minWidth: "300px",
+                                "& .MuiOutlinedInput-root": {
+                                  padding: "10px",
+                                },
+                                "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                                  {
+                                    border: "none",
+                                  },
                               }}
                               options={itemsNames}
                               getOptionLabel={(option) => option.name}
@@ -891,7 +905,6 @@ export default function Invoices() {
                                   placeholder="اسم العنصر"
                                 />
                               )}
-                              disableClearable
                             />
                           ) : (
                             row.name
