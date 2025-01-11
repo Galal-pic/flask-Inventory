@@ -34,13 +34,22 @@ def create_app():
     jwt.init_app(app)
 
     # Initialize Flask-RestX API
-    api = Api(app, doc='/docs', title='Warehouse Management API', description='API for managing warehouse operations')
+    api = Api(
+        app,
+        doc='/docs',
+        title='Warehouse Management API',
+        description='API for managing warehouse operations',
+        validate=True  # Enable request validation
+    )
 
     # Register namespaces
-    from .routes import inventory_ns, invoice_ns
+    from .routes import warehouse_ns, invoice_ns, machine_ns, mechanism_ns, item_location_ns
     from .auth import auth_ns
-    api.add_namespace(inventory_ns)
+    api.add_namespace(warehouse_ns)
     api.add_namespace(invoice_ns)
     api.add_namespace(auth_ns)
+    api.add_namespace(machine_ns)
+    api.add_namespace(mechanism_ns)
+    api.add_namespace(item_location_ns)  # Register the missing namespace
 
     return app
