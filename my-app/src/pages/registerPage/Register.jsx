@@ -1,57 +1,47 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Button,
-  TextField,
-  Paper,
-  InputAdornment,
-  IconButton,
-  Snackbar,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormHelperText,
-  Alert,
-} from "@mui/material";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { Box, Button, Paper, IconButton } from "@mui/material";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import styles from "./Register.module.css";
 import { useNavigate } from "react-router-dom";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import CustomSelectField from "../../components/customSelectField/CustomSelectField";
+import SnackBar from "../../components/snackBar/SnackBar";
+import { CustomTextField } from "../../components/customTextField/CustomTextField";
 
 export default function Register() {
+  // requires
   const [username, setUserName] = useState("");
-  const [jobName, setJobName] = useState("");
+  const [job, setJob] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [formError, setFormError] = useState("");
+
+  // errors
   const [nameError, setNameError] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [jobError, setJobError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+
+  // snackbar
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackBarType, setSnackBarType] = useState("");
+  // Handle close snack
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
+  };
 
+  // navigation
   const navigate = useNavigate();
 
-  const validatePhone = (phone) => {
-    const phoneRegex = /^[0-9]+$/;
-    return phoneRegex.test(phone);
-  };
-
-  const handleClickShowPassword = () => {
-    setShowPassword((prev) => !prev);
-  };
+  // select field options
+  const jobs = [
+    { value: "موظف", label: "موظف" },
+    { value: "مدير", label: "مدير" },
+  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setFormError("");
     setNameError("");
     setPhoneError("");
     setJobError("");
@@ -69,7 +59,7 @@ export default function Register() {
     if (!phoneNumber) {
       setPhoneError("يرجى ادخال رقم الهاتف");
       return;
-    } else if (!validatePhone(phoneNumber)) {
+    } else if (!/^[0-9]+$/.test(phoneNumber)) {
       setPhoneError("رقم الهاتف غير صالح");
       return;
     } else if (phoneNumber.length > 20) {
@@ -77,7 +67,7 @@ export default function Register() {
       return;
     }
 
-    if (!jobName) {
+    if (!job) {
       setJobError("يرجى ادخال اسم الوظيفة");
       return;
     }
@@ -102,7 +92,7 @@ export default function Register() {
       username,
       password,
       phone_number: phoneNumber,
-      job_name: jobName,
+      job_name: job,
     };
 
     fetch("http://127.0.0.1:5000/auth/register", {
@@ -152,15 +142,6 @@ export default function Register() {
     navigate(-1);
   };
 
-  const CustomArrow = (props) => (
-    <ArrowDropDownIcon
-      {...props}
-      sx={{
-        marginRight: "85%",
-      }}
-    />
-  );
-
   return (
     <div className={styles.container}>
       <Box
@@ -180,196 +161,51 @@ export default function Register() {
             className={styles.textFields}
           >
             {/* Name Field */}
-            <TextField
+            <CustomTextField
               label="الاسم"
-              variant="outlined"
-              required
               value={username}
-              onChange={(e) => setUserName(e.target.value)}
+              setValue={setUserName}
+              valueError={nameError}
               className={styles.textField}
-              error={!!nameError}
-              helperText={nameError}
-              slotProps={{
-                input: {
-                  style: {
-                    direction: "rtl",
-                  },
-                },
-                inputLabel: {
-                  style: {
-                    textAlign: "right",
-                    width: "calc(100% - 28px)",
-                  },
-                },
-              }}
-              sx={{
-                "& .MuiOutlinedInput-notchedOutline": {
-                  textAlign: "right",
-                },
-                "& .MuiInputLabel-root": {
-                  transformOrigin: "right",
-                },
-              }}
             />
+
             {/* Phone Field */}
-            <TextField
+            <CustomTextField
               label="رقم الهاتف"
-              variant="outlined"
-              required
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              setValue={setPhoneNumber}
+              valueError={phoneError}
               className={styles.textField}
-              error={!!phoneError}
-              helperText={phoneError}
-              slotProps={{
-                input: {
-                  style: {
-                    direction: "rtl",
-                  },
-                },
-                inputLabel: {
-                  style: {
-                    textAlign: "right",
-                    width: "calc(100% - 28px)",
-                  },
-                },
-              }}
-              sx={{
-                "& .MuiOutlinedInput-notchedOutline": {
-                  textAlign: "right",
-                },
-                "& .MuiInputLabel-root": {
-                  transformOrigin: "right",
-                },
-              }}
             />
 
             {/* job Field */}
-            <FormControl
-              className={styles.textField}
-              variant="outlined"
+            <CustomSelectField
+              label="اختر الوظيفة"
+              value={job}
+              setValue={setJob}
+              options={jobs}
               error={!!jobError}
-            >
-              <InputLabel
-                id="demo-simple-select-label"
-                sx={{
-                  textAlign: "right",
-                  width: "calc(100% - 28px)",
-                  transformOrigin: "right",
-                }}
-              >
-                الوظيفة
-              </InputLabel>
-              <Select
-                value={jobName}
-                onChange={(e) => setJobName(e.target.value)}
-                label="الوظيفة"
-                sx={{
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    textAlign: "right",
-                  },
-                }}
-                IconComponent={CustomArrow}
-              >
-                <MenuItem
-                  sx={{
-                    direction: "rtl",
-                  }}
-                  value="مبرمج"
-                >
-                  مبرمج
-                </MenuItem>
-                <MenuItem
-                  sx={{
-                    direction: "rtl",
-                  }}
-                  value="مدير"
-                >
-                  مدير
-                </MenuItem>
-              </Select>
-              {!!jobError && <FormHelperText>{jobError}</FormHelperText>}
-            </FormControl>
+            />
 
             {/* Password Field */}
-            <TextField
+            <CustomTextField
               label="كلمة المرور"
-              type={showPassword ? "text" : "password"}
-              variant="outlined"
-              required
+              type={"password"}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              setValue={setPassword}
+              valueError={passwordError}
               className={styles.textField}
-              error={!!passwordError}
-              helperText={passwordError}
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={handleClickShowPassword}
-                        edge="end"
-                        className={styles.iconVisibility}
-                      >
-                        {showPassword ? <Visibility /> : <VisibilityOff />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                  style: {
-                    direction: "rtl",
-                  },
-                },
-                inputLabel: {
-                  style: {
-                    textAlign: "right",
-                    width: "calc(100% - 28px)",
-                  },
-                },
-              }}
-              sx={{
-                "& .MuiOutlinedInput-notchedOutline": {
-                  textAlign: "right",
-                },
-                "& .MuiInputLabel-root": {
-                  transformOrigin: "right",
-                },
-              }}
             />
-            <TextField
+
+            {/* Confirm Password Field */}
+            <CustomTextField
               label="تأكيد كلمة المرور"
-              type={showPassword ? "text" : "password"}
-              variant="outlined"
-              required
+              type={"password"}
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              setValue={setConfirmPassword}
+              valueError={confirmPasswordError}
               className={styles.textField}
-              error={!!confirmPasswordError}
-              helperText={confirmPasswordError}
-              slotProps={{
-                input: {
-                  style: {
-                    direction: "rtl",
-                  },
-                },
-                inputLabel: {
-                  style: {
-                    textAlign: "right",
-                    width: "calc(100% - 28px)",
-                  },
-                },
-              }}
-              sx={{
-                "& .MuiOutlinedInput-notchedOutline": {
-                  textAlign: "right",
-                },
-                "& .MuiInputLabel-root": {
-                  transformOrigin: "right",
-                },
-              }}
             />
-            {formError && (
-              <p style={{ color: "red", textAlign: "center" }}>{formError}</p>
-            )}
           </Box>
           {/* Submit Button */}
           <Button
@@ -383,19 +219,12 @@ export default function Register() {
         </Paper>
       </Box>
 
-      <Snackbar
+      <SnackBar
         open={openSnackbar}
-        autoHideDuration={2000}
-        onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        sx={{
-          zIndex: "99999999999999999999999999999999999999",
-        }}
-      >
-        <Alert onClose={() => setOpenSnackbar(false)} severity={snackBarType}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+        message={snackbarMessage}
+        type={snackBarType}
+        onClose={handleCloseSnackbar}
+      />
     </div>
   );
 }

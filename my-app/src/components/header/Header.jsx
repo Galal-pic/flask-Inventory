@@ -24,7 +24,7 @@ const links = [
   {
     text: "الموظفين",
     href: "/users",
-  }
+  },
 ];
 
 export default function Header() {
@@ -56,8 +56,8 @@ export default function Header() {
           }
 
           const data = await response.json();
-          setUser(data); // Store the user data
-          return data; // Return the user data if needed
+          setUser(data);
+          return data;
         } catch (err) {
           console.error("Error fetching user data:", err);
         }
@@ -67,10 +67,10 @@ export default function Header() {
     fetchUserData();
   }, [logged]);
 
-  const [selectedLink, setSelectedLink] = useState("/users"); // لإدارة الرابط المختار
+  const [selectedLink, setSelectedLink] = useState("/users");
   const handleLinkClick = (href) => {
-    setSelectedLink(href); // تحديث الرابط المختار
-    navigate(href); // الانتقال للرابط
+    setSelectedLink(href);
+    navigate(href);
   };
 
   const navigate = useNavigate();

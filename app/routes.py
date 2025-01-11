@@ -442,10 +442,15 @@ class InvoiceList(Resource):
     @invoice_ns.marshal_list_with(invoice_model)
     @jwt_required()
     def get(self):
+<<<<<<< HEAD
         """Get all invoices"""
         invoices = Invoice.query.all()
         return invoices
 
+=======
+        """Get all invoices items"""
+        return Invoice.query.all()
+>>>>>>> 748d7f6a597e38f1c76e94a5c1468708fcab3dfa
     @invoice_ns.expect(invoice_model)
     @invoice_ns.marshal_with(invoice_model)
     @jwt_required()

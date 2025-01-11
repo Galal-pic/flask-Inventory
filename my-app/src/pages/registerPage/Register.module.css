@@ -18,6 +18,7 @@
 
 .boxForm {
     width: 60% !important;
+    direction: rtl !important;
 
 }
 
